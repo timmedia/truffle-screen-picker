@@ -12,24 +12,55 @@ import { observer } from "@legendapp/state/react";
 
 import "./App.css";
 import { fromSpecObservable } from "./from-spec-observable";
+import { collection, doc, onSnapshot } from "firebase/firestore";
+import { firestore } from "./firebase";
 
 const user = fromSpecObservable(userClient.observable);
 const orgUser = fromSpecObservable(userClient.orgUser.observable);
 const org = fromSpecObservable(orgClient.observable);
 
+interface StoredSetup {
+  currentlyVoting: boolean;
+  currentVideoId: string;
+}
+
 function App() {
+  const ref = collection(firestore, "/admin");
+
+  onSnapshot(doc(ref, "Ogc8Qi42SO1mgDO2PdJv"), (doc) => {
+    const { currentlyVoting, currentVideoId } = doc.data() as StoredSetup;
+    currentlyVoting ? embed.show() : embed.hide();
+    setVideoId(currentVideoId);
+  });
+
+  const [videoId, setVideoId] = useState("");
+
   const [orgId, setOrgId] = useState<string | undefined>(undefined);
+
   useEffect(() => {
-    const subscription = orgClient.observable.subscribe({
+    const subscription = userClient.observable.subscribe({
       next: (org) => {
-        setOrgId(org?.id);
-        // console.log(org);
+        // setOrgId(org?.id);
+        console.log("new userClient:", org);
       },
       error: (error) => console.log(error),
       complete: () => {},
     });
     return () => subscription.unsubscribe();
   });
+
+  useEffect(() => {
+    const subscription = orgClient.observable.subscribe({
+      next: (org) => {
+        // setOrgId(org?.id);
+        console.log("new orgClient:", org);
+      },
+      error: (error) => console.log(error),
+      complete: () => {},
+    });
+    return () => subscription.unsubscribe();
+  });
+
   const iframeRef = useRef(null);
 
   const [waiting, setWaiting] = useState(true);
@@ -47,15 +78,16 @@ function App() {
   const handleClick = (event: any) => {
     // console.log(event.clientX, event.clientY);
     setSubmitted(true);
-    console.log(document.location);
-    // setTimeout(() => embed.hide(), 5000);
+    // console.log(document.location);
+    console.log(document.referrer);
+    setTimeout(() => embed.hide(), 5000);
   };
 
   return (
     <div className="app">
       <main onClick={handleClick}>
         <iframe
-          src="https://yewtu.be/embed/l_SoOSe7LIw?volume=0&controls=0"
+          src={`https://yewtu.be/embed/${videoId}?volume=0&controls=0`}
           className="video-frame"
           onLoad={onIframeLoad}
           ref={iframeRef}
