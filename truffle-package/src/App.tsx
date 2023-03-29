@@ -13,86 +13,177 @@ import { observer } from "@legendapp/state/react";
 import "./App.css";
 import { fromSpecObservable } from "./from-spec-observable";
 import { collection, doc, onSnapshot } from "firebase/firestore";
+import { docData } from "rxfire/firestore";
+import { distinctUntilChanged, filter, map } from "rxjs/operators";
 import { firestore } from "./firebase";
+import { Opener } from "./components/Opener";
+import { MouseVisualizer } from "./components/MouseVisualizer";
 
-const user = fromSpecObservable(userClient.observable);
-const orgUser = fromSpecObservable(userClient.orgUser.observable);
-const org = fromSpecObservable(orgClient.observable);
+// const user = fromSpecObservable(userClient.observable);
+// const orgUser = fromSpecObservable(userClient.orgUser.observable);
+// const org = fromSpecObservable(orgClient.observable);
 
 interface StoredSetup {
   currentlyVoting: boolean;
-  currentVideoId: string;
 }
 
 function App() {
-  const ref = collection(firestore, "/admin");
-
-  onSnapshot(doc(ref, "Ogc8Qi42SO1mgDO2PdJv"), (doc) => {
-    const { currentlyVoting, currentVideoId } = doc.data() as StoredSetup;
-    currentlyVoting ? embed.show() : embed.hide();
-    setVideoId(currentVideoId);
-  });
-
-  const [videoId, setVideoId] = useState("");
-
-  const [orgId, setOrgId] = useState<string | undefined>(undefined);
+  const [currentlyVoting, setCurrentlyVoting] = useState<boolean | undefined>(
+    undefined
+  );
+  const [showOpener, setShowOpener] = useState(false);
 
   useEffect(() => {
-    const subscription = userClient.observable.subscribe({
-      next: (org) => {
-        // setOrgId(org?.id);
-        console.log("new userClient:", org);
-      },
-      error: (error) => console.log(error),
-      complete: () => {},
+    embed.hide();
+    embed.setStyles({
+      position: "absolute",
+      "box-sizing": "border-box",
+      height: "100%",
+      width: "100%",
+      top: "0px",
+      left: "0px",
+      "mix-blend-mode": "hard-light",
+      "z-index": 50000,
+      boxShadow: "0px 0px 200px rgb(255, 147, 192)",
+      transition: "opacity 300ms linear",
+      opacity: 0,
     });
-    return () => subscription.unsubscribe();
-  });
+  }, []);
 
   useEffect(() => {
-    const subscription = orgClient.observable.subscribe({
-      next: (org) => {
-        // setOrgId(org?.id);
-        console.log("new orgClient:", org);
-      },
-      error: (error) => console.log(error),
-      complete: () => {},
-    });
+    const docRef = doc(collection(firestore, "/admin"), "Ogc8Qi42SO1mgDO2PdJv");
+    const subscription = docData(docRef)
+      .pipe(
+        map((data) => (data as StoredSetup).currentlyVoting),
+        distinctUntilChanged()
+      )
+      .subscribe((newCurrentlyVoting) =>
+        setCurrentlyVoting(newCurrentlyVoting)
+      );
     return () => subscription.unsubscribe();
-  });
+  }, []);
 
-  const [waiting, setWaiting] = useState(true);
-  const [submitted, setSubmitted] = useState(false);
-  const [animationPaused, setAnimationPaused] = useState(false);
+  useEffect(() => {
+    if (currentlyVoting === true) {
+      embed.show();
+      const t1 = setTimeout(() => embed.setStyles({ opacity: 1 }), 300);
+      const t2 = setTimeout(() => setShowOpener(currentlyVoting), 400);
+      // return () => {
+      //   console.log("timeout cleared");
+      //   clearTimeout(t1);
+      //   clearTimeout(t2);
+      // };
+    } else if (currentlyVoting === false) {
+      setShowOpener(currentlyVoting);
+      embed.setStyles({ opacity: 0 });
+      setTimeout(() => embed.hide(), 600);
+    }
+  }, [currentlyVoting]);
+
+  // onSnapshot(
+  //   doc(collection(firestore, "/admin"), "Ogc8Qi42SO1mgDO2PdJv"),
+  //   (doc) => {
+  //     const { currentlyVoting: newCurrentlyVoting } = doc.data() as StoredSetup;
+  //     if (currentlyVoting === newCurrentlyVoting) return;
+  //     setCurrentlyVoting(newCurrentlyVoting);
+  //     if (newCurrentlyVoting) {
+  //       embed.show();
+  //       setTimeout(() => embed.setStyles({ opacity: 1 }), 300);
+  //       // setTimeout(() => setCurrentlyVoting(true), 1500);
+  //     } else {
+  //       embed.setStyles({ opacity: 0 });
+  //       setTimeout(() => {
+  //         embed.hide();
+  //         // setCurrentlyVoting(false);
+  //       }, 1500);
+  //     }
+  //   }
+  // );
+
+  // const [orgId, setOrgId] = useState<string | undefined>(undefined);
+
+  // useEffect(() => {
+  //   const subscription = userClient.observable.subscribe({
+  //     next: (org) => {
+  //       // setOrgId(org?.id);
+  //       console.log("new userClient:", org);
+  //     },
+  //     error: (error) => console.log(error),
+  //     complete: () => {},
+  //   });
+  //   return () => subscription.unsubscribe();
+  // });
+
+  // useEffect(() => {
+  //   const subscription = orgClient.observable.subscribe({
+  //     next: (org) => {
+  //       // setOrgId(org?.id);
+  //       console.log("new orgClient:", org);
+  //     },
+  //     error: (error) => console.log(error),
+  //     complete: () => {},
+  //   });
+  //   return () => subscription.unsubscribe();
+  // });
+
+  // const [waiting, setWaiting] = useState(true);
+  // const [submitted, setSubmitted] = useState(false);
+  // const [animationPaused, setAnimationPaused] = useState(false);
 
   const handleClick = (event: any) => {
+    console.log("clicked");
     // console.log(event.clientX, event.clientY);
-    setSubmitted(true);
+    // setSubmitted(true);
     // console.log(document.location);
-    console.log(document.referrer);
-    setTimeout(() => embed.hide(), 5000);
+    // console.log(document.referrer);
+    // setTimeout(() => embed.hide(), 5000);
   };
 
   return (
     <div className="app">
       <main onClick={handleClick}>
-        <iframe
-          src={`https://yewtu.be/embed/${videoId}?volume=0&controls=0`}
-          className="video-frame"
-        ></iframe>
-        <div className="overlay">
+        {showOpener && <MouseVisualizer />}
+        <Opener key={`${showOpener}`} expanded={showOpener} />
+
+        {/* <div className="overlay">
           <div className={`overlay-text`}>
-            <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg"> */}
+        {/* <text
+                textAnchor="middle"
+                alignmentBaseline="central"
+                x="70"
+                y="23"
+                style={{
+                  transform: submitted ? "translateX(200px)" : "translateX(0)",
+                  fontSize: "25px",
+                  fill: "black",
+                }}
+              >
+                Click anywhere
+              </text>
               <text
+                textAnchor="middle"
+                alignmentBaseline="central"
+                x="70"
+                y="56"
+                style={{
+                  transform: submitted ? "translateX(-200px)" : "translateX(0)",
+                  fontSize: "48px",
+                  fill: "rgb(255, 147, 192)",
+                }}
+              >
+                to vote!
+              </text> */}
+        {/* <text
                 textAnchor="start"
                 alignmentBaseline="central"
                 x="4"
-                y="35"
-                color="white"
+                y="25"
                 style={{
                   transform: !submitted
                     ? "translateX(-200px)"
                     : "translateX(0)",
+                  fontSize: "35px",
                 }}
               >
                 Thank you
@@ -101,16 +192,16 @@ function App() {
                 textAnchor="end"
                 alignmentBaseline="central"
                 x="138"
-                y="70"
-                color="white"
+                y="62"
                 style={{
                   transform: !submitted ? "translateX(200px)" : "translateX(0)",
+                  fontSize: "35px",
                 }}
               >
                 for voting!
               </text>
-            </svg>
-          </div>
+            </svg> */}
+        {/* </div>
           <div
             className={`overlay-color  breathing`}
             style={{
@@ -126,10 +217,10 @@ function App() {
             style={{
               transform: submitted
                 ? "scaleX(1.5) scaleY(2) translate(0, 0)"
-                : "scaleX(0.15) scaleY(0.25) translate(-360vw, 140vh)",
+                : "scaleX(0.15) scaleY(0.25) translate(-400vw, 140vh)",
             }}
           ></div>
-        </div>
+        </div> */}
       </main>
     </div>
   );

@@ -1,0 +1,62 @@
+.left-door,
+.right-door {
+  position: absolute;
+  top: 0;
+  background-color: black;
+  width: 100%;
+  height: 100%;
+}
+
+.left-door {
+  left: -100%;
+  clip-path: polygon(0% 0%, 0% 100%, 46% 100%, 56% 0%);
+}
+
+.right-door {
+  right: -100%;
+  clip-path: polygon(100% 0%, 100% 100%, 45% 100%, 55% 0%);
+}
+
+.close-left-door-animation,
+.close-right-door-animation {
+  animation-duration: 350ms;
+  animation-timing-function: ease-out;
+  animation-play-state: running;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+.close-left-door-animation {
+  animation-name: left-door;
+}
+
+.close-right-door-animation {
+  animation-name: right-door;
+}
+
+@keyframes left-door {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes right-door {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes textZoom {
+  0% {
+    transform: scale(2.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

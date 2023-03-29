@@ -5,13 +5,17 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background: none transparent;
+  background-color: none transparent;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  --primary-pink: 255, 147, 192;
+  --primary-celeste: 146, 227, 227;
 }
 
 a {
@@ -29,6 +33,12 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background: none transparent;
+  background-color: none transparent;
+}
+
+html {
+  background: transparent;
 }
 
 h1 {

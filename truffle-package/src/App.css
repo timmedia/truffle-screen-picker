@@ -21,8 +21,6 @@
   text-align: center;
   background: transparent;
   overflow-x: hidden;
-  --primary-pink: 255, 147, 192;
-  --primary-celeste: 146, 227, 227;
 }
 
 .app {
@@ -32,9 +30,12 @@
 }
 
 main {
-  background-color: red;
-  width: min(100vw, calc(1.78 * 100vh));
-  height: min(100vh, calc(0.5625 * 100vw));
+  /* background-color: rgba(255, 0, 0, 0.1); */
+  background-color: grey;
+  width: 100vw;
+  height: 100vh;
+  /* width: min(100vw, calc(1.78 * 100vh));
+  height: min(100vh, calc(0.5625 * 100vw)); */
   position: relative;
 }
 
@@ -66,7 +67,7 @@ main {
 }
 
 .overlay-color {
-  mix-blend-mode: color;
+  /* mix-blend-mode: color; */
   animation-duration: 2s;
   animation-timing-function: ease;
   animation-play-state: running;
@@ -105,19 +106,18 @@ main {
   z-index: 10;
 }
 
-svg {
+/* svg {
   position: absolute;
   top: 0px;
   left: 0px;
   height: 100%;
   width: 100%;
-}
+} */
 
 svg > text {
   font-family: Thunder, "Poppins", Arial;
   text-transform: uppercase;
   font-weight: 500;
-  font-size: 35px;
   fill: black;
   transition: transform 700ms ease;
   transition-delay: 1000ms;
@@ -125,13 +125,16 @@ svg > text {
 
 @keyframes breathing {
   0% {
-    background-color: rgba(var(--color), 0);
+    background-color: rgba(var(--color), 0.2);
+  }
+  55% {
+    background-color: rgba(var(--color), 0.2);
   }
   75% {
-    background-color: rgba(var(--color), 0);
-  }
-  85% {
     background-color: rgba(var(--color), 1);
+  }
+  100% {
+    background-color: rgba(var(--color), 0.2);
   }
 }
 
