@@ -1,12 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-
+import { useState } from "react";
 import "./OpenerAnimation.css";
 
-export function Opener(props: {
-  expanded: boolean;
-  topText: string;
-  bottomText: string;
-}) {
+export function Opener(props: { topText: string; bottomText: string }) {
   const [animationStage, setAnimationStage] = useState(0);
 
   return (
@@ -20,7 +15,7 @@ export function Opener(props: {
         transition: "transform 100ms ease, clip-path 200ms linear",
         transitionDelay: "700ms",
         transformOrigin: "50% 50%",
-        transform: animationStage >= 2 ? "skew(-11deg, 0deg) scaleX(1.12)" : "",
+        transform: animationStage >= 2 ? "skew(10deg, 0deg) scaleX(1.1)" : "",
         clipPath: `polygon(${animationStage > 2 ? "50%" : "-20%"} 0%, ${
           animationStage > 2 ? "50%" : "0%"
         } 100%, ${animationStage > 2 ? "50%" : "120%"} 100%, ${
@@ -31,17 +26,9 @@ export function Opener(props: {
         animationStage === 2 ? setAnimationStage(3) : null
       }
     >
+      <div className={`left-door close-left-door-animation`}></div>
       <div
-        key={`${props.expanded}-l`}
-        className={`left-door ${
-          props.expanded ? "close-left-door-animation" : ""
-        }`}
-      ></div>
-      <div
-        key={`${props.expanded}-r`}
-        className={`right-door ${
-          props.expanded ? "close-right-door-animation" : ""
-        }`}
+        className={`right-door close-right-door-animation`}
         onAnimationEnd={() => setAnimationStage(1)}
       ></div>
       <svg
@@ -58,15 +45,15 @@ export function Opener(props: {
       >
         <text
           textAnchor="middle"
-          alignmentBaseline="central"
+          alignmentBaseline="alphabetic"
           x="70"
-          y="23"
+          y="32"
           style={{
-            fontSize: "35px",
+            fontSize: `${(7 / props.topText.length) * 35}px`,
             fill: animationStage >= 1 ? "rgb(255, 147, 192)" : "grey",
             transformOrigin: "50% 100%",
             transform: "scale(2.2)",
-            animationName: props.expanded ? "textZoom" : "",
+            animationName: "textZoom",
             animationDuration: "300ms",
             animationDelay: "250ms",
             animationTimingFunction: "ease-out",
@@ -81,15 +68,15 @@ export function Opener(props: {
         </text>
         <text
           textAnchor="middle"
-          alignmentBaseline="central"
+          alignmentBaseline="hanging"
           x="70"
-          y="58"
+          y="44"
           style={{
-            fontSize: "48px",
+            fontSize: `${(7 / props.bottomText.length) * 35}px`,
             fill: animationStage >= 1 ? "rgb(255, 147, 192)" : "grey",
             transformOrigin: "50% 0%",
             transform: "scale(2.2)",
-            animationName: props.expanded ? "textZoom" : "",
+            animationName: "textZoom",
             animationDuration: "300ms",
             animationDelay: "250ms",
             animationTimingFunction: "ease-out",
