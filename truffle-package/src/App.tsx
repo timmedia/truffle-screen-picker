@@ -32,6 +32,7 @@ function App() {
     undefined
   );
   const [showOpener, setShowOpener] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     embed.hide();
@@ -65,6 +66,7 @@ function App() {
 
   useEffect(() => {
     if (currentlyVoting === true) {
+      setSubmitted(false);
       embed.show();
       const t1 = setTimeout(() => embed.setStyles({ opacity: 1 }), 300);
       const t2 = setTimeout(() => setShowOpener(currentlyVoting), 400);
@@ -132,18 +134,35 @@ function App() {
 
   const handleClick = (event: any) => {
     console.log("clicked");
+    setSubmitted(true);
     // console.log(event.clientX, event.clientY);
     // setSubmitted(true);
     // console.log(document.location);
     // console.log(document.referrer);
-    // setTimeout(() => embed.hide(), 5000);
+    setTimeout(() => embed.setStyles({ opacity: 0 }), 2500);
+    setTimeout(() => embed.hide(), 3500);
   };
 
   return (
     <div className="app">
       <main onClick={handleClick}>
         {showOpener && <MouseVisualizer />}
-        <Opener key={`${showOpener}`} expanded={showOpener} />
+        {submitted && (
+          <Opener
+            key={`${submitted}`}
+            expanded={true}
+            topText="Thanks for"
+            bottomText="voting!"
+          />
+        )}
+        {!submitted && (
+          <Opener
+            key={`${submitted}`}
+            expanded={true}
+            topText="Time to"
+            bottomText="Vote!"
+          />
+        )}
 
         {/* <div className="overlay">
           <div className={`overlay-text`}>

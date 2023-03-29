@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 
 import "./OpenerAnimation.css";
 
-export function Opener(props: { expanded: boolean }) {
+export function Opener(props: {
+  expanded: boolean;
+  topText: string;
+  bottomText: string;
+}) {
   const [animationStage, setAnimationStage] = useState(0);
 
   return (
@@ -10,11 +14,13 @@ export function Opener(props: { expanded: boolean }) {
       style={{
         width: "100%",
         height: "100%",
-        position: "relative",
+        position: "absolute",
+        top: "0",
+        left: "0",
         transition: "transform 100ms ease, clip-path 200ms linear",
         transitionDelay: "700ms",
         transformOrigin: "50% 50%",
-        transform: animationStage >= 2 ? "skew(-12deg, 0deg) scaleX(1.15)" : "",
+        transform: animationStage >= 2 ? "skew(-11deg, 0deg) scaleX(1.12)" : "",
         clipPath: `polygon(${animationStage > 2 ? "50%" : "-20%"} 0%, ${
           animationStage > 2 ? "50%" : "0%"
         } 100%, ${animationStage > 2 ? "50%" : "120%"} 100%, ${
@@ -71,7 +77,7 @@ export function Opener(props: { expanded: boolean }) {
           }}
           onTransitionEnd={() => setAnimationStage(2)}
         >
-          Time to
+          {props.topText}
         </text>
         <text
           textAnchor="middle"
@@ -93,7 +99,7 @@ export function Opener(props: { expanded: boolean }) {
             transition: "fill 500ms linear",
           }}
         >
-          vote!
+          {props.bottomText}
         </text>
       </svg>
     </div>
