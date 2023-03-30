@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./OpenerAnimation.css";
+import "./Opener.css";
 
 export function Opener(props: { topText: string; bottomText: string }) {
   const [animationStage, setAnimationStage] = useState(0);

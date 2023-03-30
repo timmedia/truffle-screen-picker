@@ -6,6 +6,9 @@ import {
   TruffleOrgClient,
   user as userClient,
   org as orgClient,
+  TruffleUser,
+  TruffleOrg,
+  getAccessToken,
 } from "@trufflehq/sdk";
 
 import { observer } from "@legendapp/state/react";
@@ -15,23 +18,28 @@ import { fromSpecObservable } from "./from-spec-observable";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { docData } from "rxfire/firestore";
 import { distinctUntilChanged, filter, map } from "rxjs/operators";
-import { firestore } from "./firebase";
+import { firestore, functions } from "./firebase";
 import { Opener } from "./components/Opener";
 import { MouseVisualizer } from "./components/MouseVisualizer";
+import { connectFunctionsEmulator, httpsCallable } from "firebase/functions";
+import { StoredSetup, SubmitVoteData } from "../../models";
 
 // const user = fromSpecObservable(userClient.observable);
 // const orgUser = fromSpecObservable(userClient.orgUser.observable);
 // const org = fromSpecObservable(orgClient.observable);
 
-interface StoredSetup {
-  currentlyVoting: boolean;
-}
+const STREAM_ID = "EXAMPLE-STREAM-ID";
 
 function App() {
-  const [currentlyVoting, setCurrentlyVoting] = useState<boolean | undefined>(
-    undefined
-  );
+  // undefined <=> we don't know, waiting for firebase
+  // string <=> we are voting
+  // null <=> we are not voting
+  const [pollId, setPollId] = useState<string | undefined | null>(undefined);
   const [submitted, setSubmitted] = useState(false);
+  const [user, setUser] = useState<TruffleUser | undefined>(undefined);
+  const [org, setOrg] = useState<TruffleOrg | undefined>(undefined);
+
+  const main = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     embed.hide();
@@ -54,35 +62,79 @@ function App() {
     const docRef = doc(collection(firestore, "/admin"), "Ogc8Qi42SO1mgDO2PdJv");
     const subscription = docData(docRef)
       .pipe(
-        map((data) => (data as StoredSetup).currentlyVoting),
+        map((data) => (data as StoredSetup).pollId),
         distinctUntilChanged()
       )
-      .subscribe((newCurrentlyVoting) =>
-        setCurrentlyVoting(newCurrentlyVoting)
-      );
+      .subscribe((newPollId) => setPollId(newPollId));
     return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (currentlyVoting === true) {
+    const subscription = orgClient.observable.subscribe({
+      next: (org) => (org ? setOrg(org) : null),
+      error: (error) => console.log(error),
+      complete: () => void null,
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const subscription = userClient.observable.subscribe({
+      next: (user) => (user ? setUser(user) : null),
+      error: (error) => console.log(error),
+      complete: () => void null,
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    app.org.observable.subscribe({
+      next: console.log,
+      error: console.log,
+    });
+    app.user.observable.subscribe({
+      next: console.log,
+      error: console.log,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (typeof pollId === "string") {
       setSubmitted(false);
       embed.show();
       setTimeout(() => embed.setStyles({ opacity: 1 }), 300);
-    } else if (currentlyVoting === false) {
+    } else if (pollId === null) {
       embed.setStyles({ opacity: 0 });
       setTimeout(() => embed.hide(), 600);
     }
-  }, [currentlyVoting]);
+  }, [pollId]);
 
-  const handleClick = (event: any) => {
+  const handleClick = async (event: any) => {
     setSubmitted(true);
     setTimeout(() => embed.setStyles({ opacity: 0 }), 2500);
     setTimeout(() => embed.hide(), 3500);
+    if (user === undefined) return;
+    if (typeof pollId !== "string") return;
+    const accessToken = await getAccessToken();
+    // connectFunctionsEmulator(functions, "localhost", 5000);
+    const submitVote = httpsCallable<SubmitVoteData, { success: boolean }>(
+      functions,
+      "submitVote"
+    );
+    const result = await submitVote({
+      accessToken,
+      relX: event.clientX / main.current!.clientWidth,
+      relY: event.clientY / main.current!.clientHeight,
+      userId: user.id,
+      pollId: pollId,
+      streamId: STREAM_ID,
+    });
+    console.log(result.data);
   };
 
   return (
     <div className="app">
-      <main onClick={handleClick}>
+      <main onClick={handleClick} ref={main}>
         {!submitted && <MouseVisualizer />}
         {submitted && <Opener topText="Thanks for" bottomText="voting!" />}
         {!submitted && <Opener topText="Time to" bottomText="Vote!" />}
