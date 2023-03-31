@@ -3,7 +3,6 @@ import * as admin from "firebase-admin";
 import { verify } from "jsonwebtoken";
 import { uuid } from "uuidv4";
 import { initializeApp } from "firebase-admin/app";
-// import { type SubmitVoteData } from "../../models";
 
 initializeApp();
 const db = admin.database();

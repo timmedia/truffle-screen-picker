@@ -1,39 +1,22 @@
 import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import Menu from "@mui/material/Menu";
-import Container from "@mui/material/Container";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import Tooltip from "@mui/material/Tooltip";
-import MenuItem from "@mui/material/MenuItem";
-import ImageIcon from "@mui/icons-material/Image";
-
-import BeachAccessIcon from "@mui/icons-material/BeachAccess";
-import WorkIcon from "@mui/icons-material/Work";
 import { Add, Stop } from "@mui/icons-material";
-import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { firestore, functions } from "./firebase";
 import { CreatePollData, StopCurrentPollData, StoredSetup } from "../../models";
+import { httpsCallable } from "firebase/functions";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import LoadingButton from "@mui/lab/LoadingButton";
+import ListItemText from "@mui/material/ListItemText";
+import { Stack } from "@mui/material";
 import {
   getAccessToken,
   org as orgClient,
   TruffleOrg,
   TruffleUser,
   user as userClient,
-  embed,
 } from "@trufflehq/sdk";
 import "./App.css";
-import { httpsCallable } from "firebase/functions";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import LoadingButton from "@mui/lab/LoadingButton";
-import ListItemText from "@mui/material/ListItemText";
-import { ListItemAvatar, Stack } from "@mui/material";
 
 function App() {
   const [storedSetup, setStoredSetup] = useState<StoredSetup | undefined>(
@@ -172,17 +155,34 @@ function App() {
           />
         </ListItem>
         <ListItem>
-          <ListItemText
-            primary="Current Poll Results"
-            secondary={
-              <a
-                href="https://truffle-demos.web.app/currentPollResults"
-                target="_blank"
-              >
-                https://truffle-demos.web.app/currentPollResults
-              </a>
-            }
-          />
+          {org?.id && (
+            <ListItemText
+              primary="Current Poll Results"
+              secondary={
+                <a
+                  href={`https://truffle-demos.web.app/pollResults/${org.id}`}
+                  target="_blank"
+                >
+                  {`https://truffle-demos.web.app/pollResults/${org.id}`}
+                </a>
+              }
+            />
+          )}
+        </ListItem>
+        <ListItem>
+          {storedSetup?.currentPollId && (
+            <ListItemText
+              primary="Current Poll Results (permalink)"
+              secondary={
+                <a
+                  href={`https://truffle-demos.web.app/pollResults/${org?.id}/${storedSetup.currentPollId}`}
+                  target="_blank"
+                >
+                  {`https://truffle-demos.web.app/pollResults/${org?.id}/${storedSetup.currentPollId}`}
+                </a>
+              }
+            />
+          )}
         </ListItem>
       </List>
     </>
