@@ -1,6 +1,12 @@
 export interface StoredSetup {
-  pollId: string | null;
-  streamId: string;
+  currentPollId: string | null;
+  previousPollIds: string[];
+}
+
+export interface CreatePollData {
+  accessToken: string;
+  userId: string;
+  orgId: string;
 }
 
 export interface SubmitVoteData {
@@ -9,5 +15,11 @@ export interface SubmitVoteData {
   accessToken: string;
   userId: string;
   pollId: string;
-  streamId: string;
+  orgId: string;
+}
+
+export interface StopCurrentPollData {
+  accessToken: string;
+  userId: string;
+  orgId: string;
 }
