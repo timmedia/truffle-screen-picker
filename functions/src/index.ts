@@ -16,8 +16,8 @@ const MYCELIUM_PUBLIC_ES256_KEY =
   "-----END PUBLIC KEY-----";
 
 export interface StoredSetup {
-  pollId: string | null;
-  streamId: string;
+  currentPollId: string | null;
+  previousPollIds: string[];
 }
 
 export interface SubmitVoteData {
@@ -26,13 +26,19 @@ export interface SubmitVoteData {
   accessToken: string;
   userId: string;
   pollId: string;
-  streamId: string;
+  orgId: string;
 }
 
 export interface CreatePollData {
   accessToken: string;
   userId: string;
-  streamId: string;
+  orgId: string;
+}
+
+export interface StopCurrentPollData {
+  accessToken: string;
+  userId: string;
+  orgId: string;
 }
 
 /**
@@ -66,16 +72,34 @@ export const submitVote = functions.https.onCall(
 
 export const createPoll = functions.https.onCall(
   async (data: CreatePollData) => {
-    const { accessToken, userId, streamId } = data;
+    const { accessToken, userId, orgId } = data;
     const isAllowed = verifyUserId(accessToken, userId);
     if (!isAllowed) return { success: false };
     // TODO: check whether user is authorized to create a poll
     // must somehow determine whether user is admin of channel of interest
-    const pollId = uuid();
+    const currentPollId = uuid();
     await Promise.all([
-      db.ref(`polls/${pollId}`).set([]),
-      firestore.collection("admin").doc(streamId).set({ pollId }),
+      db.ref(`polls/${currentPollId}`).set([]),
+      firestore.collection("admin").doc(orgId).update({ currentPollId }),
     ]);
-    return { success: true, pollId };
+    return { success: true, currentPollId };
+  }
+);
+
+export const stopCurrentPoll = functions.https.onCall(
+  async (data: StopCurrentPollData) => {
+    const { accessToken, userId, orgId } = data;
+    const isAllowed = verifyUserId(accessToken, userId);
+    if (!isAllowed) return { success: false };
+    const snapshot = await firestore.collection("admin").doc(orgId).get();
+    const { currentPollId } = snapshot.data() as StoredSetup;
+    await firestore
+      .collection("admin")
+      .doc(orgId)
+      .update({
+        currentPollId: null,
+        previousPollIds: admin.firestore.FieldValue.arrayUnion(currentPollId),
+      });
+    return { success: true };
   }
 );
