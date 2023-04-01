@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { db } from "./firebase";
 import "./App.css";
 import { get, ref } from "firebase/database";
+import { KMeans, Vectors, Cluster } from "kmeans-ts";
+import kmeans from "./kmeans";
+
+function transpose(matrix: Array<[number, number]>) {
+  return matrix[0].map((col, i) => matrix.map((row) => row[i]));
+}
 
 function App() {
   const [pollId, setPollId] = useState<string | undefined>(undefined);
@@ -38,17 +44,39 @@ function App() {
     const context = canvas!.getContext("2d")!;
     context.fillStyle = "rgba(0, 0, 0, 0.2)";
     // context.filter = "blur(20px)";
-    Object.values(data).map(([relX, relY]) => {
-      context.beginPath();
-      context.arc(
-        (relX * context.canvas.width) / 2,
-        (relY * context.canvas.height) / 2,
-        20,
-        0,
-        2 * Math.PI
-      );
-      context.fill();
-    });
+    const set = Object.values(data);
+
+    // const [xs, ys] = transpose(set);
+
+    const { centroids, clusters } = kmeans(set, 7);
+    Object.values(clusters).map((label, index) =>
+      label.points.map(([x, y]) => {
+        context.fillStyle = `hsl(${
+          (360 / Object.keys(clusters).length) * index
+        }, 100%, 40%)`;
+        context.beginPath();
+        context.arc(
+          (x * context.canvas.width) / 2,
+          (y * context.canvas.height) / 2,
+          5,
+          0,
+          2 * Math.PI
+        );
+        context.fill();
+      })
+    );
+
+    // Object.values(data).map(([relX, relY]) => {
+    //   context.beginPath();
+    //   context.arc(
+    //     (relX * context.canvas.width) / 2,
+    //     (relY * context.canvas.height) / 2,
+    //     5,
+    //     0,
+    //     2 * Math.PI
+    //   );
+    //   context.fill();
+    // });
   };
 
   return (
