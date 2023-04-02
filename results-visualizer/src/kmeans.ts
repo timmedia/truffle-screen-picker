@@ -20,7 +20,7 @@ function arraysEqual<T extends Array<any>>(a: T, b: T) {
 }
 
 /* Get the euclidean distance squared between two points. */
-function distance2(a: Tuple, b: Tuple, aspectRatio: number = 16 / 9) {
+function distance2(a: Tuple, b: Tuple, aspectRatio: number) {
   return (aspectRatio * (a[0] - b[0])) ** 2 + (a[1] - b[1]) ** 2;
   // return a.reduce((sum, ai, i) => sum + (ai - b[i]) ** 2, 0);
 }
@@ -48,7 +48,11 @@ function calcMeanCentroid(data: TupleArray, start: number, end: number) {
 }
 
 // Returns a label for each piece of data in the dataset.
-function getLabels(data: TupleArray, centroids: TupleArray) {
+function getLabels(
+  data: TupleArray,
+  centroids: TupleArray,
+  aspectRatio: number
+) {
   // prep data structure:
   const labels: Labels = {};
   for (let c = 0; c < centroids.length; c++) {
@@ -69,10 +73,10 @@ function getLabels(data: TupleArray, centroids: TupleArray) {
       if (j === 0) {
         closestCentroid = centroid;
         closestCentroidIndex = j;
-        prevDistance = distance2(a, closestCentroid);
+        prevDistance = distance2(a, closestCentroid, aspectRatio);
       } else {
         // get distance:
-        const distance = distance2(a, centroid);
+        const distance = distance2(a, centroid, aspectRatio);
         if (Number.isNaN(prevDistance) || distance < prevDistance) {
           prevDistance = distance;
           closestCentroid = centroid;
@@ -147,6 +151,7 @@ export function kmeans(
   data: TupleArray,
   k: number,
   maxIterations: number = 100,
+  aspectRatio: number = 16 / 9,
   useNaiveSharding = true
 ) {
   if (data.length && data[0].length && data.length > k) {
@@ -170,7 +175,7 @@ export function kmeans(
       iterations++;
 
       // Assign labels to each datapoint based on centroids
-      labels = getLabels(data, centroids);
+      labels = getLabels(data, centroids, aspectRatio);
       centroids = recalculateCentroids(data, labels, k);
     }
 
@@ -190,17 +195,27 @@ export function optimalKMeans(
   data: TupleArray,
   maxIterations: number = 100,
   kmax: number = 10,
+  aspectRatio: number = 16 / 9,
   useNaiveSharding = true
 ) {
   const results = Array<ReturnType<typeof kmeans>>(kmax);
   const sses = Array<number>(kmax);
   for (let k = 0; k < kmax; ++k) {
-    results[k] = kmeans(data, k + 1, maxIterations, useNaiveSharding);
+    results[k] = kmeans(
+      data,
+      k + 1,
+      maxIterations,
+      aspectRatio,
+      useNaiveSharding
+    );
     const { clusters } = results[k];
     sses[k] = Object.values(clusters).reduce(
       (total, { points, centroid }) =>
         total +
-        points.reduce((sum, point) => distance2(point, centroid) + sum, 0),
+        points.reduce(
+          (sum, point) => distance2(point, centroid, aspectRatio) + sum,
+          0
+        ),
       0
     );
   }

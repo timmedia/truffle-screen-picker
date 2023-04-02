@@ -41,7 +41,8 @@ function App() {
     const canvas = canvasRef.current;
     const context = canvas!.getContext("2d")!;
     const kmax = Math.min(10, Math.floor(data.length / 5));
-    const { clusters } = optimalKMeans(data, 6, kmax);
+    const aspectRatio = context.canvas.width / context.canvas.height;
+    const { clusters } = optimalKMeans(data, 6, kmax, aspectRatio);
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     clusters.map((label, index) => {
       const hue = 40 + (360 / clusters.length) * index;
