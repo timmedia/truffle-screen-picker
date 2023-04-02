@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { db } from "./firebase";
+import { get, onValue, ref } from "firebase/database";
+import { optimalKMeans, TupleArray } from "./kmeans";
 import "./App.css";
-import { get, ref } from "firebase/database";
-import { optimalKMeans } from "./kmeans";
 
 function App() {
   const [pollId, setPollId] = useState<string | undefined>(undefined);
@@ -26,25 +26,27 @@ function App() {
 
   useEffect(() => {
     if (pollId === undefined) return;
-    refreshScreen();
-    // const interval = setInterval(() => refreshScreen(), 5000);
-    // return () => clearInterval(interval);
+    ref(db, `polls/${pollId}`);
+    const unsubscribe = onValue(ref(db, `polls/${pollId}`), (snapshot) => {
+      const data = snapshot.val() as { [key: string]: [number, number] };
+      if (!data) return;
+      refreshScreen(Object.values(data));
+    });
+    return () => unsubscribe();
   }, [pollId]);
 
-  const refreshScreen = async () => {
-    console.log("refreshing screen");
-    const snapshot = await get(ref(db, `polls/${pollId}`));
-    const data = snapshot.val() as { [key: string]: [number, number] };
+  const refreshScreen = async (data: TupleArray) => {
+    if (data.length < 10) return;
+    console.log(data);
     const canvas = canvasRef.current;
     const context = canvas!.getContext("2d")!;
-    const set = Object.values(data);
-
-    const { clusters } = optimalKMeans(set, 6);
-
+    const kmax = Math.min(10, Math.floor(data.length / 5));
+    const { clusters } = optimalKMeans(data, 6, kmax);
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     clusters.map((label, index) => {
       const hue = 40 + (360 / clusters.length) * index;
       const maxWidth = context.canvas.width / 80;
-      const alpha = 25 / set.length;
+      const alpha = 25 / data.length;
       context.fillStyle = `hsla(${hue}, 95%, 70%, ${alpha})`;
       label.points.map(([x, y]) => {
         for (let i = 5; i < maxWidth; i += 5) {
@@ -60,22 +62,24 @@ function App() {
         }
       });
       const [x, y] = label.centroid;
-      const p = label.points.length / set.length;
+      const p = label.points.length / data.length;
       context.font = `${context.canvas.width / 30}px Thunder`;
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.strokeStyle = `hsla(${hue}, 95%, 80%, 1)`;
       context.lineWidth = 15;
+      const textX = Math.min(Math.max(0.05, x), 0.95);
+      const textY = Math.min(Math.max(0.05, y), 0.95);
       context.strokeText(
         `${Math.round(p * 100)}%`,
-        (x * context.canvas.width) / 2,
-        (y * context.canvas.height) / 2
+        (textX * context.canvas.width) / 2,
+        (textY * context.canvas.height) / 2
       );
       context.fillStyle = `hsla(${hue}, 95%, 0%, 1)`;
       context.fillText(
         `${Math.round(p * 100)}%`,
-        (x * context.canvas.width) / 2,
-        (y * context.canvas.height) / 2
+        (textX * context.canvas.width) / 2,
+        (textY * context.canvas.height) / 2
       );
     });
   };

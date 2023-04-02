@@ -136,9 +136,9 @@ function shouldStop(
 
   let sameCount = true;
   for (let i = 0; i < centroids.length; i++) {
-    if (!arraysEqual(centroids[i], oldCentroids[i])) {
+    if (centroids[i] === undefined || oldCentroids[i] === undefined)
       sameCount = false;
-    }
+    else if (!arraysEqual(centroids[i], oldCentroids[i])) sameCount = false;
   }
   return sameCount;
 }
@@ -189,8 +189,8 @@ export function kmeans(
 export function optimalKMeans(
   data: TupleArray,
   maxIterations: number = 100,
-  useNaiveSharding = true,
-  kmax: number = 10
+  kmax: number = 10,
+  useNaiveSharding = true
 ) {
   const results = Array<ReturnType<typeof kmeans>>(kmax);
   const sses = Array<number>(kmax);
