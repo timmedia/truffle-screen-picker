@@ -1,3 +1,19 @@
+@font-face {
+  font-family: "Thunder";
+  src: url("https://cdn.bio/assets/fonts/thunder/Thunder-BoldLC.eot"); /* IE9 Compat Modes */
+  src: url("https://cdn.bio/assets/fonts/thunder/Thunder-BoldLC.eot?#iefix")
+      format("embedded-opentype"),
+    url("https://cdn.bio/assets/fonts/thunder/Thunder-BoldLC.woff")
+      format("woff"),
+    url("https://cdn.bio/assets/fonts/thunder/Thunder-BoldLC.woff2")
+      format("woff2"),
+    url("https://cdn.bio/assets/fonts/thunder/Thunder-BoldLC.ttf")
+      format("truetype");
+  font-style: normal;
+  font-weight: bold;
+  text-rendering: optimizeLegibility;
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

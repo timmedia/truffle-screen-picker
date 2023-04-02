@@ -3,33 +3,48 @@ export type TupleArray = Array<Tuple>;
 export type Label = { points: TupleArray; centroid: Tuple };
 export type Labels = { [key: number]: Label };
 
-/**
- * Get random centroids.
- * @param data Input dataset
- * @param k number of centroids
- */
-export function getRandomCentroids(data: TupleArray, k: number): TupleArray {
-  const centroidsIndex: number[] = [];
+/* Get a random subset of an array. */
+function randomSubset<T>(array: T[], k: number) {
+  const shuffled = array.slice(0);
   let index;
-  while (centroidsIndex.length < k) {
-    index = Math.floor(Math.random() * data.length);
-    if (centroidsIndex.indexOf(index) === -1) centroidsIndex.push(index);
+  for (let i = array.length; i > array.length - k; --i) {
+    index = Math.floor((i + 1) * Math.random());
+    [shuffled[index], shuffled[i]] = [shuffled[i], shuffled[index]];
   }
-  const centroids: TupleArray = [];
-  for (let i = 0; i < centroidsIndex.length; i++) {
-    const centroid: Tuple = [...data[centroidsIndex[i]]];
-    centroids.push(centroid);
-  }
-  return centroids;
+  return shuffled.slice(array.length - k);
 }
 
-// Calculate Squared Euclidean Distance
-function getDistanceSQ(a: Tuple, b: Tuple) {
-  const diffs = [];
-  for (let i = 0; i < a.length; i++) {
-    diffs.push(a[i] - b[i]);
+/* Check whether two array contain the same values. */
+function arraysEqual<T extends Array<any>>(a: T, b: T) {
+  return a.length === b.length && a.every((ai, i) => ai === b[i]);
+}
+
+/* Get the euclidean distance squared between two points. */
+function distance2(a: Tuple, b: Tuple, aspectRatio: number = 16 / 9) {
+  return (aspectRatio * (a[0] - b[0])) ** 2 + (a[1] - b[1]) ** 2;
+  // return a.reduce((sum, ai, i) => sum + (ai - b[i]) ** 2, 0);
+}
+
+/* Calculate mean point of an array containing tuples. */
+function mean<S extends number[], T extends Array<S>>(points: T) {
+  const n = points.length;
+  const d = points[0].length;
+  return points.reduce(
+    (mean, a) => a.map((ai, i) => mean[i] + ai / n),
+    Array<number>(d).fill(0)
+  ) as S;
+}
+
+function calcMeanCentroid(data: TupleArray, start: number, end: number) {
+  const features = data[0].length;
+  const n = end - start;
+  let mean: Tuple = [0, 0];
+  for (let i = start; i < end; i++) {
+    for (let j = 0; j < features; j++) {
+      mean[j] = mean[j] + data[i][j] / n;
+    }
   }
-  return diffs.reduce((r, e) => r + e * e, 0);
+  return mean;
 }
 
 // Returns a label for each piece of data in the dataset.
@@ -54,10 +69,10 @@ function getLabels(data: TupleArray, centroids: TupleArray) {
       if (j === 0) {
         closestCentroid = centroid;
         closestCentroidIndex = j;
-        prevDistance = getDistanceSQ(a, closestCentroid);
+        prevDistance = distance2(a, closestCentroid);
       } else {
         // get distance:
-        const distance = getDistanceSQ(a, centroid);
+        const distance = distance2(a, centroid);
         if (Number.isNaN(prevDistance) || distance < prevDistance) {
           prevDistance = distance;
           closestCentroid = centroid;
@@ -71,19 +86,6 @@ function getLabels(data: TupleArray, centroids: TupleArray) {
   return labels;
 }
 
-function getPointsMean(pointList: TupleArray) {
-  const totalPoints = pointList.length;
-  const means: Tuple = [0, 0];
-  for (let i = 0; i < pointList.length; i++) {
-    const point = pointList[i];
-    for (let j = 0; j < point.length; j++) {
-      const val = point[j];
-      means[j] = means[j] + val / totalPoints;
-    }
-  }
-  return means;
-}
-
 function recalculateCentroids(data: TupleArray, labels: Labels, k: number) {
   // Each centroid is the geometric mean of the points that
   // have that centroid's label. Important: If a centroid is empty (no points have
@@ -94,26 +96,14 @@ function recalculateCentroids(data: TupleArray, labels: Labels, k: number) {
     const centroidGroup = labels[k];
     if (centroidGroup.points.length > 0) {
       // find mean:
-      newCentroid = getPointsMean(centroidGroup.points);
+      newCentroid = mean(centroidGroup.points);
     } else {
       // get new random centroid
-      newCentroid = getRandomCentroids(data, 1)[0];
+      newCentroid = randomSubset(data, 1)[0];
     }
     newCentroidList.push(newCentroid);
   }
   return newCentroidList;
-}
-
-function calcMeanCentroid(data: TupleArray, start: number, end: number) {
-  const features = data[0].length;
-  const n = end - start;
-  let mean: Tuple = [0, 0];
-  for (let i = start; i < end; i++) {
-    for (let j = 0; j < features; j++) {
-      mean[j] = mean[j] + data[i][j] / n;
-    }
-  }
-  return mean;
 }
 
 function getRandomCentroidsNaiveSharding(data: TupleArray, k: number) {
@@ -135,37 +125,25 @@ function getRandomCentroidsNaiveSharding(data: TupleArray, k: number) {
   return centroids;
 }
 
-function compareCentroids(a: Tuple, b: Tuple) {
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
 function shouldStop(
   oldCentroids: TupleArray,
   centroids: TupleArray,
   iterations: number,
   maxIterations: number
 ) {
-  if (iterations > maxIterations) {
-    return true;
-  }
-  if (!oldCentroids || !oldCentroids.length) {
-    return false;
-  }
+  if (iterations > maxIterations) return true;
+  if (!oldCentroids || !oldCentroids.length) return false;
+
   let sameCount = true;
   for (let i = 0; i < centroids.length; i++) {
-    if (!compareCentroids(centroids[i], oldCentroids[i])) {
+    if (!arraysEqual(centroids[i], oldCentroids[i])) {
       sameCount = false;
     }
   }
   return sameCount;
 }
 
-function kmeans(
+export function kmeans(
   data: TupleArray,
   k: number,
   maxIterations: number = 100,
@@ -182,7 +160,7 @@ function kmeans(
     if (useNaiveSharding) {
       centroids = getRandomCentroidsNaiveSharding(data, k);
     } else {
-      centroids = getRandomCentroids(data, k);
+      centroids = randomSubset(data, k);
     }
 
     // Run the main k-means algorithm
@@ -196,13 +174,8 @@ function kmeans(
       centroids = recalculateCentroids(data, labels, k);
     }
 
-    const clusters: Labels = {};
-    for (let i = 0; i < k; i++) {
-      clusters[i] = labels[i];
-      // clusters.push(labels[i]);
-    }
     const results = {
-      clusters: clusters,
+      clusters: Object.values(labels),
       centroids: centroids,
       iterations: iterations,
       converged: iterations <= maxIterations,
@@ -213,4 +186,25 @@ function kmeans(
   }
 }
 
-export default kmeans;
+export function optimalKMeans(
+  data: TupleArray,
+  maxIterations: number = 100,
+  useNaiveSharding = true,
+  kmax: number = 10
+) {
+  const results = Array<ReturnType<typeof kmeans>>(kmax);
+  const sses = Array<number>(kmax);
+  for (let k = 0; k < kmax; ++k) {
+    results[k] = kmeans(data, k + 1, maxIterations, useNaiveSharding);
+    const { clusters } = results[k];
+    sses[k] = Object.values(clusters).reduce(
+      (total, { points, centroid }) =>
+        total +
+        points.reduce((sum, point) => distance2(point, centroid) + sum, 0),
+      0
+    );
+  }
+  const minSse = Math.min(...sses);
+  const chosenIndex = sses.findIndex((sse) => sse <= 1.3 * minSse);
+  return results[chosenIndex];
+}

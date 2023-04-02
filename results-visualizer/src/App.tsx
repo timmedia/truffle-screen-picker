@@ -2,12 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { db } from "./firebase";
 import "./App.css";
 import { get, ref } from "firebase/database";
-import { KMeans, Vectors, Cluster } from "kmeans-ts";
-import kmeans from "./kmeans";
-
-function transpose(matrix: Array<[number, number]>) {
-  return matrix[0].map((col, i) => matrix.map((row) => row[i]));
-}
+import { optimalKMeans } from "./kmeans";
 
 function App() {
   const [pollId, setPollId] = useState<string | undefined>(undefined);
@@ -32,7 +27,7 @@ function App() {
   useEffect(() => {
     if (pollId === undefined) return;
     refreshScreen();
-    // const interval = setInterval(() => refreshScreen(), 10000);
+    // const interval = setInterval(() => refreshScreen(), 5000);
     // return () => clearInterval(interval);
   }, [pollId]);
 
@@ -42,41 +37,47 @@ function App() {
     const data = snapshot.val() as { [key: string]: [number, number] };
     const canvas = canvasRef.current;
     const context = canvas!.getContext("2d")!;
-    context.fillStyle = "rgba(0, 0, 0, 0.2)";
-    // context.filter = "blur(20px)";
     const set = Object.values(data);
 
-    // const [xs, ys] = transpose(set);
+    const { clusters } = optimalKMeans(set, 6);
 
-    const { centroids, clusters } = kmeans(set, 7);
-    Object.values(clusters).map((label, index) =>
+    clusters.map((label, index) => {
+      const hue = 40 + (360 / clusters.length) * index;
+      const maxWidth = context.canvas.width / 80;
+      const alpha = 25 / set.length;
+      context.fillStyle = `hsla(${hue}, 95%, 70%, ${alpha})`;
       label.points.map(([x, y]) => {
-        context.fillStyle = `hsl(${
-          (360 / Object.keys(clusters).length) * index
-        }, 100%, 40%)`;
-        context.beginPath();
-        context.arc(
-          (x * context.canvas.width) / 2,
-          (y * context.canvas.height) / 2,
-          5,
-          0,
-          2 * Math.PI
-        );
-        context.fill();
-      })
-    );
-
-    // Object.values(data).map(([relX, relY]) => {
-    //   context.beginPath();
-    //   context.arc(
-    //     (relX * context.canvas.width) / 2,
-    //     (relY * context.canvas.height) / 2,
-    //     5,
-    //     0,
-    //     2 * Math.PI
-    //   );
-    //   context.fill();
-    // });
+        for (let i = 5; i < maxWidth; i += 5) {
+          context.beginPath();
+          context.arc(
+            (x * context.canvas.width) / 2,
+            (y * context.canvas.height) / 2,
+            i,
+            0,
+            2 * Math.PI
+          );
+          context.fill();
+        }
+      });
+      const [x, y] = label.centroid;
+      const p = label.points.length / set.length;
+      context.font = `${context.canvas.width / 30}px Thunder`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.strokeStyle = `hsla(${hue}, 95%, 80%, 1)`;
+      context.lineWidth = 15;
+      context.strokeText(
+        `${Math.round(p * 100)}%`,
+        (x * context.canvas.width) / 2,
+        (y * context.canvas.height) / 2
+      );
+      context.fillStyle = `hsla(${hue}, 95%, 0%, 1)`;
+      context.fillText(
+        `${Math.round(p * 100)}%`,
+        (x * context.canvas.width) / 2,
+        (y * context.canvas.height) / 2
+      );
+    });
   };
 
   return (
