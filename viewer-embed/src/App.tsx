@@ -23,6 +23,7 @@ import { Opener } from "./components/Opener";
 import { MouseVisualizer } from "./components/MouseVisualizer";
 import { connectFunctionsEmulator, httpsCallable } from "firebase/functions";
 import { StoredSetup, SubmitVoteData } from "../../models";
+import { OverlayAnimation } from "./components/OverlayAnimation";
 
 // const user = fromSpecObservable(userClient.observable);
 // const orgUser = fromSpecObservable(userClient.orgUser.observable);
@@ -48,7 +49,7 @@ function App() {
       width: "100%",
       top: "0px",
       left: "0px",
-      "mix-blend-mode": "hard-light",
+      // "mix-blend-mode": "normal",
       "z-index": 50000,
       boxShadow: "0px 0px 200px rgb(255, 147, 192)",
       transition: "opacity 300ms linear",
@@ -135,6 +136,7 @@ function App() {
     <div className="app">
       <main onClick={handleClick} ref={main}>
         {!submitted && <MouseVisualizer />}
+        {!submitted && <OverlayAnimation />}
         {submitted && <Opener topText="Thanks for" bottomText="voting!" />}
         {!submitted && <Opener topText="Time to" bottomText="Vote!" />}
       </main>

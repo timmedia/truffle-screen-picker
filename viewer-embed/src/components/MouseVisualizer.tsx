@@ -27,7 +27,7 @@ export function MouseVisualizer() {
     const { offsetX, offsetY } = e.nativeEvent;
     const canvas = canvasRef.current;
     const context = canvas!.getContext("2d")!;
-    context.fillStyle = "white";
+    context.fillStyle = "black";
     context.beginPath();
     context.arc(offsetX, offsetY, 20, 0, 2 * Math.PI);
     context.fill();
@@ -44,6 +44,9 @@ export function MouseVisualizer() {
           left: 0,
           width: "100%",
           height: "100%",
+          padding: 0,
+          margin: 0,
+          zIndex: 5501,
         }}
       ></canvas>
     </>

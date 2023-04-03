@@ -21,6 +21,8 @@ export function Opener(props: { topText: string; bottomText: string }) {
         } 100%, ${animationStage > 2 ? "50%" : "120%"} 100%, ${
           animationStage > 2 ? "50%" : "100%"
         } 0%)`,
+        pointerEvents: "none",
+        zIndex: 5555,
       }}
       onTransitionEnd={() =>
         animationStage === 2 ? setAnimationStage(3) : null
