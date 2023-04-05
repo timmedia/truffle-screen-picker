@@ -37,17 +37,16 @@ function App() {
 
   const refreshScreen = async (data: TupleArray) => {
     if (data.length < 10) return;
-    console.log(data);
     const canvas = canvasRef.current;
     const context = canvas!.getContext("2d")!;
     const kmax = Math.min(10, Math.floor(data.length / 5));
     const aspectRatio = context.canvas.width / context.canvas.height;
     const { clusters } = optimalKMeans(data, 6, kmax, aspectRatio);
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+    const maxWidth = context.canvas.width / 70;
+    const alpha = 25 / data.length;
     clusters.map((label, index) => {
-      const hue = 40 + (360 / clusters.length) * index;
-      const maxWidth = context.canvas.width / 80;
-      const alpha = 25 / data.length;
+      const hue = 5 + (360 / clusters.length) * index;
       context.fillStyle = `hsla(${hue}, 95%, 70%, ${alpha})`;
       label.points.map(([x, y]) => {
         for (let i = 5; i < maxWidth; i += 5) {
@@ -68,9 +67,9 @@ function App() {
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.strokeStyle = `hsla(${hue}, 95%, 80%, 1)`;
-      context.lineWidth = 15;
-      const textX = Math.min(Math.max(0.05, x), 0.95);
-      const textY = Math.min(Math.max(0.05, y), 0.95);
+      context.lineWidth = 10;
+      const textX = Math.min(Math.max(0.07, x), 0.93);
+      const textY = Math.min(Math.max(0.07, y), 0.93);
       context.strokeText(
         `${Math.round(p * 100)}%`,
         (textX * context.canvas.width) / 2,
