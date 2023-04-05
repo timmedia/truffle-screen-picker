@@ -39,9 +39,8 @@ function App() {
     if (data.length < 10) return;
     const canvas = canvasRef.current;
     const context = canvas!.getContext("2d")!;
-    const kmax = Math.min(10, Math.floor(data.length / 5));
     const aspectRatio = context.canvas.width / context.canvas.height;
-    const { clusters } = optimalKMeans(data, 6, kmax, aspectRatio);
+    const { clusters } = optimalKMeans(data, 100, 4, aspectRatio);
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     const maxWidth = context.canvas.width / 70;
     const alpha = 25 / data.length;
@@ -63,7 +62,7 @@ function App() {
       });
       const [x, y] = label.centroid;
       const p = label.points.length / data.length;
-      context.font = `${context.canvas.width / 30}px Thunder`;
+      context.font = `${context.canvas.width / 30}px Thunder, "Arial Black"`;
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.strokeStyle = `hsla(${hue}, 95%, 80%, 1)`;

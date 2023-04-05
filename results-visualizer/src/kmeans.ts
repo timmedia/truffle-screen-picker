@@ -193,22 +193,21 @@ export function kmeans(
 
 export function optimalKMeans(
   data: TupleArray,
-  maxIterations: number = 100,
-  kmax: number = 10,
+  maxIterations: number,
+  kmax: number,
   aspectRatio: number = 16 / 9,
-  useNaiveSharding = true
+  useNaiveSharding = false
 ) {
-  const results = Array<ReturnType<typeof kmeans>>(kmax);
+  const results = Array<{ clusters: Label[] }>(kmax);
   const sses = Array<number>(kmax);
   for (let k = 0; k < kmax; ++k) {
-    results[k] = kmeans(
+    let { clusters } = kmeans(
       data,
       k + 1,
       maxIterations,
       aspectRatio,
       useNaiveSharding
     );
-    const { clusters } = results[k];
     sses[k] = Object.values(clusters).reduce(
       (total, { points, centroid }) =>
         total +
@@ -218,6 +217,7 @@ export function optimalKMeans(
         ),
       0
     );
+    results[k] = { clusters };
   }
   const minSse = Math.min(...sses);
   const chosenIndex = sses.findIndex((sse) => sse <= 1.3 * minSse);
