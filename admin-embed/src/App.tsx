@@ -35,7 +35,6 @@ function App() {
     const unsubscribe = onSnapshot(docRef, (doc) => {
       const data = doc.data() as StoredSetup;
       setStoredSetup(data);
-      console.log("new snapshot", data);
     });
     return () => unsubscribe();
   }, [org]);
@@ -134,14 +133,14 @@ function App() {
         <ListItem>
           <ListItemText
             primary={`Org: ${org?.name}`}
-            secondary={org?.id}
+            secondary={org?.id ?? "-"}
             secondaryTypographyProps={{ color: "#888" }}
           />
         </ListItem>
         <ListItem>
           <ListItemText
             primary={`User: ${user?.name}`}
-            secondary={user?.id}
+            secondary={user?.id ?? "-"}
             secondaryTypographyProps={{ color: "#888" }}
           />
         </ListItem>
@@ -150,20 +149,20 @@ function App() {
             primary={`Poll active: ${
               typeof storedSetup?.currentPollId === "string" ? "Yes" : "No"
             }`}
-            secondary={storedSetup?.currentPollId}
+            secondary={storedSetup?.currentPollId ?? "-"}
             secondaryTypographyProps={{ color: "#888" }}
           />
         </ListItem>
         <ListItem>
           {org?.id && (
             <ListItemText
-              primary="Current Poll Results"
+              primary="Latest Poll Results"
               secondary={
                 <a
-                  href={`https://truffle-demos.web.app/pollResults/${org.id}`}
+                  href={`https://truffle-demos.firebaseapp.com/latestPollResults?orgId=${org.id}`}
                   target="_blank"
                 >
-                  {`https://truffle-demos.web.app/pollResults/${org.id}`}
+                  {`https://truffle-demos.firebaseapp.com/latestPollResults?orgId=${org.id}`}
                 </a>
               }
             />
@@ -175,12 +174,19 @@ function App() {
               primary="Current Poll Results (permalink)"
               secondary={
                 <a
-                  href={`https://truffle-demos.web.app/pollResults/${org?.id}/${storedSetup.currentPollId}`}
+                  href={`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.currentPollId}`}
                   target="_blank"
                 >
-                  {`https://truffle-demos.web.app/pollResults/${org?.id}/${storedSetup.currentPollId}`}
+                  {`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.currentPollId}`}
                 </a>
               }
+            />
+          )}
+          {!storedSetup?.currentPollId && (
+            <ListItemText
+              primary="Current Poll Results (permalink)"
+              secondary="-"
+              secondaryTypographyProps={{ color: "#888" }}
             />
           )}
         </ListItem>
