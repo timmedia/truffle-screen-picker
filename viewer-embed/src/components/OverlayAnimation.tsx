@@ -11,15 +11,18 @@ export function OverlayAnimation() {
         height: "100%",
         backgroundImage: `linear-gradient(-90deg, rgba(var(--primary-celeste), 0.25) 0%,
                                                   rgba(var(--primary-celeste), 0.25) 20%,
-                                                  rgba(var(--primary-celeste), 0.5) 50%, 
+                                                  rgba(var(--primary-celeste), 0.5) 50%,
                                                   rgba(var(--primary-celeste), 0.5) 55%,
-                                                  rgba(var(--primary-celeste), 0.25) 80%) 
+                                                  rgba(var(--primary-celeste), 0.25) 80%,
                                                   rgba(var(--primary-celeste), 0.25) 100%)`,
         backgroundSize: "300% 100%",
-        animation: "overlay-position 3s linear infinite",
+        animation: "overlay-position 3.5s linear infinite",
+        animationPlayState: "running",
         zIndex: 5502,
         pointerEvents: "none",
       }}
-    ></div>
+    >
+      hi
+    </div>
   );
 }
