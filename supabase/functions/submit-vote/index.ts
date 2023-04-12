@@ -1,24 +1,17 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.16.1/mod.ts";
-import * as jose from "https://npm.tfl.dev/jose-browser-runtime";
+import * as jose from "https://npm.tfl.dev/jose-browser-runtime@4.13.1";
 import * as postgres from "https://deno.land/x/postgres@v0.14.2/mod.ts";
 
-const MYCELIUM_PUBLIC_ES256_KEY = "-----BEGIN PUBLIC KEY-----\n" +
-  "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEGzVELuVubW1DcXJPZ7cHssy4SXc0\n" +
-  "d6inNpg1L8Lwo/YqSnNQwW+nJTQOm9q+ZAfJUjOgHpfMpyNYVOzaWunz2Q==\n" +
-  "-----END PUBLIC KEY-----";
+const MYCELIUM_PUBLIC_ES256_KEY = `-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEGzVELuVubW1DcXJPZ7cHssy4SXc0
+d6inNpg1L8Lwo/YqSnNQwW+nJTQOm9q+ZAfJUjOgHpfMpyNYVOzaWunz2Q==
+-----END PUBLIC KEY-----`;
 
-const databaseUrl = Deno.env.get('SUPABASE_DB_URL')!
-
-// Create a database pool with three connections that are lazily established
-const pool = new postgres.Pool(databaseUrl, 3, true)
+const databaseUrl = Deno.env.get("SUPABASE_DB_URL")!;
+const pool = new postgres.Pool(databaseUrl, 3, true);
 
 const voteSchema = z.object({
-  accessToken: z.string(),
   pollId: z.string().uuid(),
   x: z.number().gte(0).lte(1),
   y: z.number().gte(0).lte(1),
@@ -26,30 +19,31 @@ const voteSchema = z.object({
 
 const accessTokenPayloadSchema = z.object({
   userId: z.string().uuid(),
-})
+});
 
-serve(async (req) => {
-  const request = await req.json();
+serve(async (request) => {
   let connection: postgres.PoolClient | null = null;
-
   try {
-    const { accessToken, pollId, x, y } = voteSchema.parse(request);
-    const publicKey = await jose.importSPKI(MYCELIUM_PUBLIC_ES256_KEY, "ES256")
-    const { payload } = await jose.jwtVerify(accessToken, publicKey)
-    const { userId } = accessTokenPayloadSchema.parse(payload)
-
+    // verify user, get necessary data
+    const accessToken = z.string().parse(request.headers.get("x-access-token"));
+    const publicKey = await jose.importSPKI(MYCELIUM_PUBLIC_ES256_KEY, "ES256");
+    const { payload } = await jose.jwtVerify(accessToken, publicKey);
+    const { pollId, x, y } = voteSchema.parse(await request.json());
+    const { userId } = accessTokenPayloadSchema.parse(payload);
+    // all ok, save vote
     connection = await pool.connect();
-     await connection.queryObject`insert into "public"."Vote"(poll_id, user_id, x, y) values (${pollId}, ${userId}, ${x}, ${y})`
-  } catch (err) {
-    console.error(err);
-    return new Response(String(err?.message ?? err), { status: 500 });
+    await connection.queryObject`insert into "public"."Vote" (poll_id, user_id, x, y) 
+                                 values (${pollId}, ${userId}, ${x}, ${y})`;
+    return new Response(
+      JSON.stringify({ success: true }),
+      { headers: { "Content-Type": "application/json" } },
+    );
+  } catch (error) {
+    console.error(error);
+    return new Response(String(error?.message ?? error), { status: 500 });
   } finally {
-    connection?.release()
+    connection?.release();
   }
-  return new Response(
-    JSON.stringify({ success: true }),
-    { headers: { "Content-Type": "application/json" } },
-  );
 });
 
 // To invoke:
