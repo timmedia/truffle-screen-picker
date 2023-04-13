@@ -2,6 +2,10 @@
 
 Truffle package enabling polling by letting viewers select a point on screen. Currently, there are two separate embeds: The viewer embed facilitates the actual poll (overlay on video) and the admin embed controls creating/managing the polls. The overlay runs on port `5173` by default and the admin embed on `5174`. Below are the corresponding dev embed configs. An authentication token is needed in both cases (to manage permissions and ensure each viewer can only vote once).
 
+### Why Firebase instead of Supabase?
+
+A rewrite to use Supabase has been started in [dev/supabase](/truffle-screen-picker/tree/dev/supabase), however, the Supabase free tier only allows 200 concurrent realtime connections.
+
 ## [Viewer embed](viewer-embed)
 
 ```json
