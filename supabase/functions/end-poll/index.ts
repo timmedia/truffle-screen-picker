@@ -1,11 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import * as postgres from "https://deno.land/x/postgres@v0.14.2/mod.ts";
-import {
-  getAccessToken,
-  getOrgId,
-  verifyAccessToken,
-  verifyUserAdmin,
-} from "../utils.ts";
+import { getAccessToken, getOrgId, verifyUserAdmin } from "../utils.ts";
 
 const databaseUrl = Deno.env.get("SUPABASE_DB_URL")!;
 const pool = new postgres.Pool(databaseUrl, 3, true);
@@ -16,16 +11,16 @@ serve(async (request) => {
   try {
     const accessToken = getAccessToken(request);
     const orgId = getOrgId(request);
-    const { userId } = await verifyAccessToken(accessToken);
     const isAdmin = await verifyUserAdmin(accessToken, orgId);
     if (!isAdmin) throw Error("User must be admin of org to create poll.");
-    const pollId = crypto.randomUUID();
+
     connection = await pool.connect();
-    await connection
-      .queryArray`insert into "public"."Poll" (id, org_id, author_id)
-                  values (${pollId}, ${orgId}, ${userId})`;
+    await connection.queryObject(`update "public"."Poll" 
+                                  set ended_at=now() 
+                                  where org_id='${orgId}' and ended_at is null`);
+
     return new Response(
-      JSON.stringify({ success: true, pollId }),
+      JSON.stringify({ success: true }),
       { headers: { "Content-Type": "application/json" } },
     );
   } catch (error) {
