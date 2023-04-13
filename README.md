@@ -4,7 +4,7 @@ Truffle package enabling polling by letting viewers select a point on screen. Cu
 
 ### Why Firebase instead of Supabase?
 
-A rewrite to use Supabase has been started in [dev/supabase](/truffle-screen-picker/tree/dev/supabase), however, the Supabase free tier only allows 200 concurrent realtime connections.
+A rewrite to use Supabase has been started in [dev/supabase](https://github.com/timmedia/truffle-screen-picker/tree/dev/supabase), however, the Supabase free tier only allows 200 concurrent realtime connections.
 
 ## [Viewer embed](viewer-embed)
 
