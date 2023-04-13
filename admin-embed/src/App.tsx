@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { Add, Stop } from "@mui/icons-material";
-import { collection, doc, onSnapshot } from "firebase/firestore";
-import { firestore, functions } from "./firebase";
-import { CreatePollData, StopCurrentPollData, StoredSetup } from "../../models";
-import { httpsCallable } from "firebase/functions";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import LoadingButton from "@mui/lab/LoadingButton";
 import ListItemText from "@mui/material/ListItemText";
 import { Stack } from "@mui/material";
+import { supabase } from "./supabase-client";
 import {
   getAccessToken,
   org as orgClient,
@@ -19,9 +16,8 @@ import {
 import "./App.css";
 
 function App() {
-  const [storedSetup, setStoredSetup] = useState<StoredSetup | undefined>(
-    undefined
-  );
+  // string: poll is ongoing; null: no active poll; undefined: we don't know, wait for supabase
+  const [pollId, setPollId] = useState<string | null | undefined>(undefined);
 
   const [org, setOrg] = useState<TruffleOrg | undefined>(undefined);
   const [user, setUser] = useState<TruffleUser | undefined>(undefined);
@@ -29,14 +25,48 @@ function App() {
   const [createNewPollLoading, setCreateNewPollLoading] = useState(false);
   const [stopCurrentPollLoading, setStopCurrentPollLoading] = useState(false);
 
+  // continously listen to changed
+  useEffect(() => {
+    if (!org?.id) return;
+    const channel = supabase
+      .channel("poll-db-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "Poll",
+          filter: `org_id=eq.${org.id}`,
+        },
+        (payload) => {
+          if (
+            payload.eventType === "INSERT" &&
+            payload.new?.ended_at === null
+          ) {
+            setPollId(payload.new.id);
+          } else if (
+            payload.eventType === "UPDATE" &&
+            payload.new?.id === pollId &&
+            payload.new?.ended_at !== null
+          ) {
+            setPollId(null);
+          }
+        }
+      )
+      .subscribe();
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [org, pollId]);
+
   useEffect(() => {
     if (org === undefined) return;
-    const docRef = doc(collection(firestore, "/admin"), org.id);
-    const unsubscribe = onSnapshot(docRef, (doc) => {
-      const data = doc.data() as StoredSetup;
-      setStoredSetup(data);
-    });
-    return () => unsubscribe();
+    // const docRef = doc(collection(firestore, "/admin"), org.id);
+    // const unsubscribe = onSnapshot(docRef, (doc) => {
+    //   const data = doc.data() as StoredSetup;
+    //   setStoredSetup(data);
+    // });
+    // return () => unsubscribe();
   }, [org]);
 
   useEffect(() => {
@@ -61,16 +91,7 @@ function App() {
     setCreateNewPollLoading(true);
     try {
       if (user === undefined || org === undefined) return;
-      const createPoll = httpsCallable<
-        CreatePollData,
-        { success: boolean; pollId?: string }
-      >(functions, "createPoll");
-      const result = await createPoll({
-        accessToken: await getAccessToken(),
-        userId: user.id,
-        orgId: org.id,
-      });
-      console.log(result);
+      // TODO
     } catch (error) {
       console.log(error);
     } finally {
@@ -82,16 +103,7 @@ function App() {
     setStopCurrentPollLoading(true);
     try {
       if (user === undefined || org === undefined) return;
-      const stopCurrentPoll = httpsCallable<
-        StopCurrentPollData,
-        { success: boolean; pollId?: string }
-      >(functions, "stopCurrentPoll");
-      const result = await stopCurrentPoll({
-        accessToken: await getAccessToken(),
-        userId: user.id,
-        orgId: org.id,
-      });
-      console.log(result);
+      // TODO
     } catch (error) {
       console.log(error);
     } finally {
@@ -105,7 +117,7 @@ function App() {
         <ListItem>
           <Stack spacing={1} direction="row">
             <LoadingButton
-              disabled={typeof storedSetup?.currentPollId === "string"}
+              disabled={pollId !== null}
               loading={createNewPollLoading}
               color="success"
               loadingPosition="start"
@@ -117,7 +129,7 @@ function App() {
               Create New Poll
             </LoadingButton>
             <LoadingButton
-              disabled={typeof storedSetup?.currentPollId !== "string"}
+              disabled={typeof pollId !== "string"}
               loading={stopCurrentPollLoading}
               color="error"
               loadingPosition="start"
@@ -139,7 +151,7 @@ function App() {
         </ListItem>
         <ListItem>
           <ListItemText
-            primary={`User: ${user?.name}`}
+            primary={`User: ${user?.name ?? "no name"}`}
             secondary={user?.id ?? "-"}
             secondaryTypographyProps={{ color: "#888" }}
           />
@@ -147,9 +159,9 @@ function App() {
         <ListItem>
           <ListItemText
             primary={`Poll active: ${
-              typeof storedSetup?.currentPollId === "string" ? "Yes" : "No"
+              typeof pollId === "string" ? "Yes" : "No"
             }`}
-            secondary={storedSetup?.currentPollId ?? "-"}
+            secondary={pollId ?? "-"}
             secondaryTypographyProps={{ color: "#888" }}
           />
         </ListItem>
@@ -169,20 +181,20 @@ function App() {
           )}
         </ListItem>
         <ListItem>
-          {storedSetup?.currentPollId && (
+          {pollId && (
             <ListItemText
               primary="Current Poll Results (permalink)"
               secondary={
                 <a
-                  href={`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.currentPollId}`}
+                  href={`https://truffle-demos.firebaseapp.com/pollResults?pollId=${pollId}`}
                   target="_blank"
                 >
-                  {`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.currentPollId}`}
+                  {`https://truffle-demos.firebaseapp.com/pollResults?pollId=${pollId}`}
                 </a>
               }
             />
           )}
-          {!storedSetup?.currentPollId && (
+          {!pollId && (
             <ListItemText
               primary="Current Poll Results (permalink)"
               secondary="-"

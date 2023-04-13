@@ -22,8 +22,8 @@ serve(async (request) => {
     const pollId = crypto.randomUUID();
     connection = await pool.connect();
     await connection
-      .queryArray`insert into "public"."Poll" (id, org_id, author_id)
-                  values (${pollId}, ${orgId}, ${userId})`;
+      .queryObject(`insert into "public"."Poll" (id, org_id, author_id)
+                    values ('${pollId}', '${orgId}', '${userId}')`);
     return new Response(
       JSON.stringify({ success: true, pollId }),
       { headers: { "Content-Type": "application/json" } },
