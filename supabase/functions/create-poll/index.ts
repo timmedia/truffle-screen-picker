@@ -99,15 +99,8 @@ serve(async (request) => {
     const pollId = crypto.randomUUID()
 
     connection = await pool.connect();
-    const transaction = connection.createTransaction("create poll")
-    await transaction.begin()
-    await transaction.queryArray`insert into "public"."Org" (id, current_poll_id)
-                                 values (${orgId}, ${pollId})
-                                 on conflict (id) do update
-                                 set current_poll_id=excluded.current_poll_id`
-    await transaction.queryArray`insert into "public"."Poll" (id, org_id)
-                                 values (${pollId}, ${orgId})`
-    await transaction.commit()
+    await connection.queryArray`insert into "public"."Poll" (id, org_id, author_id)
+                                values (${pollId}, ${orgId}, ${userId})`
     return new Response(
       JSON.stringify({ success: true, pollId }),
       { headers: { "Content-Type": "application/json" } },
