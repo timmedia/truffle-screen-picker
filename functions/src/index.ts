@@ -1,200 +1,105 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { verify } from "jsonwebtoken";
-import { uuid } from "uuidv4";
 import { initializeApp } from "firebase-admin/app";
-import { request, gql } from "graphql-request";
+import { verifyAccessToken, verifyUserRole as verifyRole } from "./utils";
+import { z } from "zod";
+
+const StoredSetupSchema = z.object({
+  pollId: z.string().uuid().nullable(),
+  previousPollId: z.array(z.string().uuid()),
+});
 
 initializeApp();
 const db = admin.database();
 const firestore = admin.firestore();
 
-const MYCELIUM_PUBLIC_ES256_KEY =
-  "-----BEGIN PUBLIC KEY-----\n" +
-  "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEGzVELuVubW1DcXJPZ7cHssy4SXc0\n" +
-  "d6inNpg1L8Lwo/YqSnNQwW+nJTQOm9q+ZAfJUjOgHpfMpyNYVOzaWunz2Q==\n" +
-  "-----END PUBLIC KEY-----";
+const SubmitVoteData = z.object({
+  accessToken: z.string(),
+  pollId: z.string().uuid(),
+  x: z.number().lte(1).gte(0),
+  y: z.number().lte(1).gte(0),
+});
 
-export interface StoredSetup {
-  currentPollId: string | null;
-  previousPollIds: string[];
-}
-
-export interface SubmitVoteData {
-  relX: number;
-  relY: number;
-  accessToken: string;
-  userId: string;
-  pollId: string;
-  orgId: string;
-}
-
-export interface CreatePollData {
-  accessToken: string;
-  userId: string;
-  orgId: string;
-}
-
-export interface StopCurrentPollData {
-  accessToken: string;
-  userId: string;
-  orgId: string;
-}
-
-/**
- * Checks whether user id matches provided access token.
- * @param {string} accessToken
- * @param {string} userId
- * @return {boolean}
- */
-function verifyUserId(accessToken: string, userId: string) {
+export const submitVote = functions.https.onCall(async (data) => {
   try {
-    const payload = verify(accessToken, MYCELIUM_PUBLIC_ES256_KEY, {
-      algorithms: ["ES256"],
-    });
-    if (typeof payload === "string") return false;
-    const { userId: actualUserId } = payload;
-    return actualUserId === userId;
-  } catch (error) {
-    return false;
-  }
-}
-
-/**
- * Checks whether user has the admin role for the specified org.
- * @param {string} accessToken
- * @param {string} orgId
- * @return {Promise<boolean>}
- */
-async function verifyUserAdmin(accessToken: string, orgId: string) {
-  const endpoint = "https://mycelium.staging.bio/graphql";
-  const query = gql`
-    query RoleConnectionQuery(
-      $input: RoleConnectionInput
-      $first: Int
-      $after: String
-      $last: Int
-      $before: String
-    ) {
-      roleConnection(
-        input: $input
-        first: $first
-        after: $after
-        last: $last
-        before: $before
-      ) {
-        totalCount
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
-        nodes {
-          id
-          orgId
-          name
-          slug
-          rank
-          isSuperAdmin
-        }
-      }
-    }
-  `;
-  const data = (await request({
-    url: endpoint,
-    document: query,
-    variables: { input: { orgId } },
-    requestHeaders: { "x-access-token": accessToken },
-  })) as any;
-  return data.roleConnection.nodes.some(
-    (node: any) => node.name === "Admin" && node.orgId === orgId
-  );
-}
-
-export const submitVote = functions.https.onCall(
-  async (data: SubmitVoteData) => {
-    const { accessToken, userId, relX, relY, pollId } = data;
-    const isAllowed = verifyUserId(accessToken, userId);
-    if (!isAllowed) {
-      return {
-        success: false,
-        error: new Error("Access token does not match user id."),
-      };
-    }
-    await db.ref(`polls/${pollId}/${userId}`).set([relX, relY]);
+    const { accessToken, pollId, x, y } = SubmitVoteData.parse(data);
+    const { userId } = verifyAccessToken(accessToken);
+    await db.ref(`polls/${pollId}/${userId}`).set([x, y]);
     return { success: true };
+  } catch (error) {
+    return { success: false, error };
   }
-);
+});
 
-export const createPoll = functions.https.onCall(
-  async (data: CreatePollData) => {
-    const { accessToken, userId, orgId } = data;
-    const isAllowed = verifyUserId(accessToken, userId);
-    if (!isAllowed) {
-      return {
-        success: false,
-        error: new Error("Access token does not match user id."),
-      };
-    }
-    const isAdmin = await verifyUserAdmin(accessToken, orgId);
-    if (!isAdmin) {
-      return { success: false, error: new Error("User must be an admin.") };
-    }
-    const currentPollId = uuid();
-    await Promise.all([
-      db.ref(`polls/${currentPollId}`).set([]),
-      firestore.collection("admin").doc(orgId).update({ currentPollId }),
-    ]);
-    return { success: true, currentPollId };
+const CreatePollData = z.object({
+  accessToken: z.string(),
+});
+
+export const createPoll = functions.https.onCall(async (data) => {
+  try {
+    const { accessToken } = CreatePollData.parse(data);
+    const { orgId } = verifyAccessToken(accessToken);
+    const isAdmin = await verifyRole(accessToken, "Admin");
+    if (!isAdmin) throw new Error("User must be admin of org.");
+    const pollId = crypto.randomUUID();
+    await firestore.collection("admin").doc(orgId).update({ pollId });
+    return { success: true, pollId };
+  } catch (error) {
+    console.log(error);
+    return { success: false, error };
   }
-);
+});
 
-export const stopCurrentPoll = functions.https.onCall(
-  async (data: StopCurrentPollData) => {
-    const { accessToken, userId, orgId } = data;
-    const isAllowed = verifyUserId(accessToken, userId);
-    if (!isAllowed) {
-      return {
-        success: false,
-        error: new Error("Access token does not match user id."),
-      };
-    }
-    const isAdmin = await verifyUserAdmin(accessToken, orgId);
-    if (!isAdmin) {
-      return { success: false, error: new Error("User must be an admin.") };
-    }
+const StopPollData = z.object({
+  accessToken: z.string(),
+  orgId: z.string().uuid(),
+});
+
+export const stopCurrentPoll = functions.https.onCall(async (data) => {
+  try {
+    const { accessToken, orgId } = StopPollData.parse(data);
+    const isAdmin = await verifyRole(accessToken, "Admin");
+    if (!isAdmin) throw new Error("User must be admin of org.");
     const snapshot = await firestore.collection("admin").doc(orgId).get();
-    const { currentPollId } = snapshot.data() as StoredSetup;
+    const { pollId } = StoredSetupSchema.parse(snapshot.data());
+    if (pollId === null) throw new Error("Specified org has no active poll.");
     await firestore
       .collection("admin")
       .doc(orgId)
       .update({
-        currentPollId: null,
-        previousPollIds: admin.firestore.FieldValue.arrayUnion(currentPollId),
+        pollId: null,
+        previousPollId: admin.firestore.FieldValue.arrayUnion(pollId),
       });
     return { success: true };
+  } catch (error) {
+    console.log(error);
+    return { success: false, error };
   }
-);
+});
 
 export const latestPollResults = functions.https.onRequest(
   async (request, response) => {
     const orgId = request.query?.orgId;
-    if (typeof orgId !== "string") response.redirect("/404.html");
-    const snapshot = await firestore
-      .collection("admin")
-      .doc(orgId as string)
-      .get();
-    if (!snapshot.exists) response.redirect("/404.html");
-    const setup = snapshot.data() as StoredSetup;
-    if (typeof setup.currentPollId === "string") {
-      response.redirect(`/pollResults?pollId=${setup.currentPollId}`);
-    } else if (setup.previousPollIds?.length > 0) {
-      response.redirect(
-        `/pollResults?pollId=${
-          setup.previousPollIds[setup.previousPollIds.length - 1]
-        }`
+    if (typeof orgId !== "string") return response.redirect("/404.html");
+    const snapshot = await firestore.collection("admin").doc(orgId).get();
+    if (!snapshot.exists) return response.redirect("/404.html");
+    const { pollId, previousPollId } = StoredSetupSchema.parse(snapshot.data());
+    let queryString = Object.entries(request.query)
+      .filter(([key]) => key !== "orgId")
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`
+      )
+      .join("&");
+    queryString = queryString.length > 0 ? `&${queryString}` : "";
+    if (typeof pollId === "string") {
+      return response.redirect(`/pollResults?pollId=${pollId}${queryString}`);
+    } else if (previousPollId?.length > 0) {
+      return response.redirect(
+        `/pollResults?pollId=${previousPollId.at(-1)}${queryString}`
       );
     } else {
-      response.redirect("/404.html");
+      return response.redirect("/404.html");
     }
   }
 );
