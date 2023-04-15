@@ -11,13 +11,19 @@
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
+    "@halka/state": "^1.1.1",
     "@mui/icons-material": "^5.11.11",
     "@mui/lab": "^5.0.0-alpha.124",
     "@mui/material": "^5.11.15",
     "@trufflehq/sdk": "^0.1.2",
+    "clamp": "^1.0.1",
     "firebase": "^9.18.0",
+    "immer": "^9.0.21",
+    "konva": "^9.0.0",
+    "nanoid": "^4.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-konva": "^18.2.7",
     "zod": "^3.21.4"
   },
   "devDependencies": {

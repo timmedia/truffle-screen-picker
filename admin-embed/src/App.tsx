@@ -18,6 +18,7 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { z } from "zod";
 import {
+  embed,
   getAccessToken,
   org as orgClient,
   TruffleOrg,
@@ -26,6 +27,7 @@ import {
 } from "@trufflehq/sdk";
 import { CreatePollData, StopPollData, StoredSetupSchema } from "./schemas";
 import "./App.css";
+import { DrawingBoard } from "./components/DrawingBoard/DrawingBoard";
 
 function App() {
   const [storedSetup, setStoredSetup] = useState<
@@ -37,6 +39,12 @@ function App() {
 
   const [createNewPollLoading, setCreateNewPollLoading] = useState(false);
   const [stopCurrentPollLoading, setStopCurrentPollLoading] = useState(false);
+
+  useEffect(() => {
+    embed.setStyles({
+      height: "640px",
+    });
+  }, []);
 
   useEffect(() => {
     if (org === undefined) return;
@@ -112,18 +120,14 @@ function App() {
 
   return (
     <>
-      <Box sx={{ width: "100%", bgcolor: "black", color: "whitesmoke" }}>
+      <Box sx={{ width: "100%", color: "whitesmoke", p: 0, m: 0 }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs
             value={value}
             onChange={handleChange}
             aria-label="basic tabs example"
           >
-            <Tab
-              sx={{ color: "white" }}
-              label="Information"
-              {...a11yProps(0)}
-            />
+            <Tab sx={{ color: "white" }} label="Overview" {...a11yProps(0)} />
             <Tab
               sx={{ color: "white" }}
               label="Control Poll"
@@ -149,6 +153,15 @@ function App() {
               <ListItemText
                 primary={`User: ${user?.name ?? "-"}`}
                 secondary={user?.id ?? "-"}
+                secondaryTypographyProps={{ color: "#888" }}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={`Poll active: ${
+                  typeof storedSetup?.pollId === "string" ? "Yes" : "No"
+                }`}
+                secondary={storedSetup?.pollId ?? "-"}
                 secondaryTypographyProps={{ color: "#888" }}
               />
             </ListItem>
@@ -185,74 +198,48 @@ function App() {
               </Stack>
             </ListItem>
             <ListItem>
-              <ListItemText
-                primary={`Poll active: ${
-                  typeof storedSetup?.pollId === "string" ? "Yes" : "No"
-                }`}
-                secondary={storedSetup?.pollId ?? "-"}
-                secondaryTypographyProps={{ color: "#888" }}
-              />
+              {org?.id && (
+                <ListItemText
+                  primary="Latest Poll Results"
+                  secondary={
+                    <a
+                      href={`https://truffle-demos.firebaseapp.com/latestPollResults?orgId=${org.id}`}
+                      target="_blank"
+                    >
+                      {`https://truffle-demos.firebaseapp.com/latestPollResults?orgId=${org.id}`}
+                    </a>
+                  }
+                />
+              )}
+            </ListItem>
+            <ListItem>
+              {storedSetup?.pollId && (
+                <ListItemText
+                  primary="Current Poll Results (permalink)"
+                  secondary={
+                    <a
+                      href={`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.pollId}`}
+                      target="_blank"
+                    >
+                      {`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.pollId}`}
+                    </a>
+                  }
+                />
+              )}
+              {!storedSetup?.pollId && (
+                <ListItemText
+                  primary="Current Poll Results (permalink)"
+                  secondary="-"
+                  secondaryTypographyProps={{ color: "#888" }}
+                />
+              )}
             </ListItem>
           </List>
         </TabPanel>
+        <TabPanel value={value} index={2}>
+          <DrawingBoard />
+        </TabPanel>
       </Box>
-      <List sx={{ color: "white", bgcolor: "black" }}>
-        <ListItem>
-          {org?.id && (
-            <ListItemText
-              primary="Latest Poll Results"
-              secondary={
-                <a
-                  href={`https://truffle-demos.firebaseapp.com/latestPollResults?orgId=${org.id}`}
-                  target="_blank"
-                >
-                  {`https://truffle-demos.firebaseapp.com/latestPollResults?orgId=${org.id}`}
-                </a>
-              }
-            />
-          )}
-        </ListItem>
-        <ListItem>
-          {storedSetup?.pollId && (
-            <ListItemText
-              primary="Current Poll Results (permalink)"
-              secondary={
-                <a
-                  href={`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.pollId}`}
-                  target="_blank"
-                >
-                  {`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.pollId}`}
-                </a>
-              }
-            />
-          )}
-          {!storedSetup?.pollId && (
-            <ListItemText
-              primary="Current Poll Results (permalink)"
-              secondary="-"
-              secondaryTypographyProps={{ color: "#888" }}
-            />
-          )}
-        </ListItem>
-        {/* <ListItem>
-          <Box sx={{ minWidth: "100%", color: "#888", bgcolor: "grey" }}>
-            <FormControl fullWidth variant="filled">
-              <InputLabel id="demo-simple-select-label">Display</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                // value={age}
-                label="Age"
-                // onChange={handleChange}
-              >
-                <MenuItem value={10}>Ten</MenuItem>
-                <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </ListItem> */}
-      </List>
     </>
   );
 }
