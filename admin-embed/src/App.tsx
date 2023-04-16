@@ -10,7 +10,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
-import { Stack } from "@mui/material";
+import { ButtonGroup, Stack } from "@mui/material";
 import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -171,30 +171,35 @@ function App() {
           <List>
             <ListItem>
               <Stack spacing={1} direction="row">
-                <LoadingButton
-                  disabled={typeof storedSetup?.pollId === "string"}
-                  loading={createNewPollLoading}
-                  color="success"
-                  loadingPosition="start"
-                  onClick={createNewPoll}
-                  sx={{ ":disabled": { bgcolor: "#555" } }}
-                  startIcon={<Add />}
+                <ButtonGroup
                   variant="contained"
+                  aria-label="outlined primary button group"
                 >
-                  Create New Poll
-                </LoadingButton>
-                <LoadingButton
-                  disabled={typeof storedSetup?.pollId !== "string"}
-                  loading={stopCurrentPollLoading}
-                  color="error"
-                  loadingPosition="start"
-                  onClick={stopCurrentPoll}
-                  sx={{ ":disabled": { bgcolor: "#555" } }}
-                  startIcon={<Stop />}
-                  variant="contained"
-                >
-                  Stop Current Poll
-                </LoadingButton>
+                  <LoadingButton
+                    disabled={typeof storedSetup?.pollId === "string"}
+                    loading={createNewPollLoading}
+                    color="success"
+                    loadingPosition="start"
+                    onClick={createNewPoll}
+                    sx={{ ":disabled": { bgcolor: "#555" } }}
+                    startIcon={<Add />}
+                    variant="contained"
+                  >
+                    Create New Poll
+                  </LoadingButton>
+                  <LoadingButton
+                    disabled={typeof storedSetup?.pollId !== "string"}
+                    loading={stopCurrentPollLoading}
+                    color="error"
+                    loadingPosition="start"
+                    onClick={stopCurrentPoll}
+                    sx={{ ":disabled": { bgcolor: "#555" } }}
+                    startIcon={<Stop />}
+                    variant="contained"
+                  >
+                    Stop Current Poll
+                  </LoadingButton>
+                </ButtonGroup>
               </Stack>
             </ListItem>
             <ListItem>

@@ -24,6 +24,7 @@ export type ShapeItem = CircleItem | RectangleItem;
 
 export interface DrawingBoardState {
   selected: string | null;
+  backgroundImageSrc: string | null; // TODO
   shapes: {
     [key: string]: ShapeItem;
   };

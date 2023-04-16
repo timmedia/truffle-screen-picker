@@ -4,10 +4,14 @@ import { Rect as KonvaRectangle, Transformer } from "react-konva";
 import { LIMITS } from "./constants";
 import { selectShape, transformRectangleShape, moveShape } from "./state";
 import { KonvaEventObject } from "konva/lib/Node";
+import { Box } from "konva/lib/shapes/Transformer";
+import { Vector2d } from "konva/lib/types";
 
-const boundBoxCallbackForRectangle = (oldBox: any, newBox: any) => {
+const boundBoxCallbackForRectangle = (oldBox: Box, newBox: Box) => {
   // limit resize
   if (
+    newBox.x < 0 ||
+    newBox.y < 0 ||
     newBox.width < LIMITS.RECT.MIN ||
     newBox.height < LIMITS.RECT.MIN ||
     newBox.width > LIMITS.RECT.MAX ||
@@ -16,6 +20,12 @@ const boundBoxCallbackForRectangle = (oldBox: any, newBox: any) => {
     return oldBox;
   }
   return newBox;
+};
+
+const dragBoundFunc = (pos: Vector2d) => {
+  if (pos.x < 0) pos.x = 0;
+  if (pos.y < 0) pos.y = 0;
+  return pos;
 };
 
 export function Rectangle({ id, isSelected, type, ...shapeProps }: any) {
@@ -62,15 +72,16 @@ export function Rectangle({ id, isSelected, type, ...shapeProps }: any) {
         draggable
         onDragEnd={handleDrag}
         onTransformEnd={handleTransform}
+        dragBoundFunc={dragBoundFunc}
         fill="rgba(0, 0, 0, 0.3)"
       />
       {isSelected && (
         <Transformer
           anchorSize={5}
           rotateEnabled={false}
-          clipFunc={() => console.log("clip func")}
           borderDash={[6, 2]}
           ref={transformerRef}
+          keepRatio={false}
           boundBoxFunc={boundBoxCallbackForRectangle}
         />
       )}

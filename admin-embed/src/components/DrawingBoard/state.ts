@@ -3,54 +3,38 @@ import produce from "immer";
 import { nanoid } from "nanoid";
 
 import { DEFAULTS, LIMITS } from "./constants";
-import { DrawingBoardState, ShapeItem, Shapes } from "./schemas";
-
-function clamp(value: number, min: number, max: number) {
-  return min < max
-    ? value < min
-      ? min
-      : value > max
-      ? max
-      : value
-    : value < max
-    ? max
-    : value > min
-    ? min
-    : value;
-}
-
-const APP_NAMESPACE = "__integrtr_diagrams__";
+import { DrawingBoardState, Shapes } from "./schemas";
+import { clamp } from "../../utils";
 
 const baseState: DrawingBoardState = {
   selected: null,
+  backgroundImageSrc: null,
   shapes: {},
 };
 
-export const useShapes = createStore(() => {
-  const initialState = JSON.parse(localStorage.getItem(APP_NAMESPACE) ?? "{}");
+export const useShapes = createStore({ ...baseState });
 
-  return {
-    ...baseState,
-    shapes: initialState ?? ({} as { [key: string]: ShapeItem }),
-  };
-});
-const setState = (fn: any) =>
-  useShapes.set(produce(fn) as unknown as DrawingBoardState);
+const setState: (fn: (state: DrawingBoardState) => void) => void = (fn) =>
+  useShapes.set(produce(fn));
 
 export const getState = () => useShapes.get();
 
 export const saveDiagram = () => {
-  const state = useShapes.get();
-  localStorage.setItem(APP_NAMESPACE, JSON.stringify(state.shapes));
+  // TODO
 };
 
 export const reset = () => {
-  localStorage.removeItem(APP_NAMESPACE);
   useShapes.set(baseState);
 };
 
-export const createRectangle = ({ x, y }: any) => {
-  setState((state: DrawingBoardState) => {
+export const setBackgroundImageSrc = (src: string) => {
+  setState((state) => {
+    state.backgroundImageSrc = src;
+  });
+};
+
+export const createRectangle = (x: number, y: number) => {
+  setState((state) => {
     state.shapes[nanoid()] = {
       type: Shapes.Rectangle,
       width: DEFAULTS.RECT.WIDTH,
@@ -61,8 +45,8 @@ export const createRectangle = ({ x, y }: any) => {
   });
 };
 
-export const createCircle = ({ x, y }: { x: number; y: number }) => {
-  setState((state: DrawingBoardState) => {
+export const createCircle = (x: number, y: number) => {
+  setState((state) => {
     state.shapes[nanoid()] = {
       type: Shapes.Circle,
       radius: DEFAULTS.CIRCLE.RADIUS,
@@ -79,15 +63,21 @@ export const selectShape = (id: string) => {
 };
 
 export const clearSelection = () => {
-  setState((state: DrawingBoardState) => {
+  setState((state) => {
     state.selected = null;
   });
 };
 
-export const moveShape = (id: any, event: any) => {
-  setState((state: DrawingBoardState) => {
-    const shape = state.shapes[id];
+export const deleteSelection = (id: string) => {
+  setState((state) => {
+    state.selected = null;
+    delete state.shapes[id];
+  });
+};
 
+export const moveShape = (id: any, event: any) => {
+  setState((state) => {
+    const shape = state.shapes[id];
     if (shape) {
       shape.x = event.target.x();
       shape.y = event.target.y();

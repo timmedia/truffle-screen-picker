@@ -1,8 +1,3 @@
-export enum Shapes {
-  Circle = "circle",
-  Rectangle = "rect",
-}
-
 export const DEFAULTS = {
   RECT: {
     STROKE: "#000000",
