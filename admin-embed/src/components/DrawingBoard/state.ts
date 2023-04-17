@@ -8,23 +8,25 @@ import { clamp } from "../../utils";
 
 const baseState: DrawingBoardState = {
   selected: null,
+  width: Math.min(window.innerWidth - 48, 700),
+  aspectRatio: 16 / 9,
   backgroundImageSrc: null,
   shapes: {},
 };
 
-export const useShapes = createStore({ ...baseState });
+export const useDrawingBoard = createStore({ ...baseState });
 
 const setState: (fn: (state: DrawingBoardState) => void) => void = (fn) =>
-  useShapes.set(produce(fn));
+  useDrawingBoard.set(produce(fn));
 
-export const getState = () => useShapes.get();
+export const getState = () => useDrawingBoard.get();
 
 export const saveDiagram = () => {
   // TODO
 };
 
 export const reset = () => {
-  useShapes.set(baseState);
+  useDrawingBoard.set(baseState);
 };
 
 export const setBackgroundImageSrc = (src: string) => {

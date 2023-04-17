@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 
-import { useShapes } from "./state";
+import { useDrawingBoard } from "./state";
 import { Circle } from "./Circle";
 import { Rectangle } from "./Rectangle";
 import { DrawingBoardState, Shapes } from "./schemas";
@@ -10,7 +10,7 @@ export function Shape({ shape }: any) {
     (state: DrawingBoardState) => state.selected === shape.id,
     [shape]
   );
-  const isSelected = useShapes(isSelectedSelector);
+  const isSelected = useDrawingBoard(isSelectedSelector);
 
   if (shape.type === Shapes.Rectangle) {
     return <Rectangle {...shape} isSelected={isSelected} />;
