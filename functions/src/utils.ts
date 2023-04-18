@@ -1,8 +1,12 @@
 import { verify } from "jsonwebtoken";
 import { request, gql } from "graphql-request";
 import { z } from "zod";
+import { defineString } from "firebase-functions/params";
 
-export const AccessTokenPayloadSchema = z.object({
+const MYCELIUM_PUBLIC_ES256_KEY = defineString("MYCELIUM_PUBLIC_ES256_KEY");
+const MYCELIUM_API_URL = defineString("MYCELIUM_API_URL");
+
+const AccessTokenPayloadSchema = z.object({
   userId: z.string().uuid(),
   packageId: z.string().uuid(),
   packageInstallId: z.string().uuid(),
@@ -11,17 +15,14 @@ export const AccessTokenPayloadSchema = z.object({
 });
 
 /* Checks whether user id matches provided access token. */
-export function verifyAccessToken(
-  accessToken: string,
-  myceliumPublicKey: string
-) {
-  const payload = verify(accessToken, myceliumPublicKey, {
+export function verifyAccessToken(accessToken: string) {
+  const payload = verify(accessToken, MYCELIUM_PUBLIC_ES256_KEY.value(), {
     algorithms: ["ES256"],
   });
   return AccessTokenPayloadSchema.parse(payload);
 }
 
-export const RoleConnectionResponseSchema = z.object({
+const RoleConnectionResponseSchema = z.object({
   orgUser: z.object({
     roleConnection: z.object({
       nodes: z.array(
@@ -35,11 +36,7 @@ export const RoleConnectionResponseSchema = z.object({
 });
 
 /* Checks whether user has the admin role for the specified org. */
-export async function verifyUserRole(
-  accessToken: string,
-  role: string,
-  myceliumApiUrl: string
-) {
+export async function verifyUserRole(accessToken: string, role: string) {
   const query = gql`
     query {
       orgUser {
@@ -54,7 +51,7 @@ export async function verifyUserRole(
   `;
   const data = RoleConnectionResponseSchema.parse(
     await request({
-      url: myceliumApiUrl,
+      url: MYCELIUM_API_URL.value(),
       document: query,
       requestHeaders: { "x-access-token": accessToken },
     })
