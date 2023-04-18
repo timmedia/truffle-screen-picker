@@ -1,17 +1,22 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { initializeApp } from "firebase-admin/app";
+import { v4 as uuidv4 } from "uuid";
 import { verifyAccessToken, verifyUserRole as verifyRole } from "./utils";
 import { z } from "zod";
+import { defineString } from "firebase-functions/params";
+
+initializeApp();
+const db = admin.database();
+const firestore = admin.firestore();
+
+const myceliumPublicKey = defineString("MYCELIUM_PUBLIC_ES256_KEY");
+const myceliumApiUrl = defineString("MYCELIUM_API_URL");
 
 const StoredSetupSchema = z.object({
   pollId: z.string().uuid().nullable(),
   previousPollId: z.array(z.string().uuid()),
 });
-
-initializeApp();
-const db = admin.database();
-const firestore = admin.firestore();
 
 const SubmitVoteData = z.object({
   accessToken: z.string(),
@@ -23,7 +28,10 @@ const SubmitVoteData = z.object({
 export const submitVote = functions.https.onCall(async (data) => {
   try {
     const { accessToken, pollId, x, y } = SubmitVoteData.parse(data);
-    const { userId } = verifyAccessToken(accessToken);
+    const { userId } = verifyAccessToken(
+      accessToken,
+      myceliumPublicKey.value()
+    );
     await db.ref(`polls/${pollId}/${userId}`).set([x, y]);
     return { success: true };
   } catch (error) {
@@ -38,10 +46,14 @@ const CreatePollData = z.object({
 export const createPoll = functions.https.onCall(async (data) => {
   try {
     const { accessToken } = CreatePollData.parse(data);
-    const { orgId } = verifyAccessToken(accessToken);
-    const isAdmin = await verifyRole(accessToken, "Admin");
+    const { orgId } = verifyAccessToken(accessToken, myceliumPublicKey.value());
+    const isAdmin = await verifyRole(
+      accessToken,
+      "Admin",
+      myceliumApiUrl.value()
+    );
     if (!isAdmin) throw new Error("User must be admin of org.");
-    const pollId = crypto.randomUUID();
+    const pollId = uuidv4();
     await firestore.collection("admin").doc(orgId).update({ pollId });
     return { success: true, pollId };
   } catch (error) {
@@ -52,13 +64,17 @@ export const createPoll = functions.https.onCall(async (data) => {
 
 const StopPollData = z.object({
   accessToken: z.string(),
-  orgId: z.string().uuid(),
 });
 
 export const stopCurrentPoll = functions.https.onCall(async (data) => {
   try {
-    const { accessToken, orgId } = StopPollData.parse(data);
-    const isAdmin = await verifyRole(accessToken, "Admin");
+    const { accessToken } = StopPollData.parse(data);
+    const { orgId } = verifyAccessToken(accessToken, myceliumPublicKey.value());
+    const isAdmin = await verifyRole(
+      accessToken,
+      "Admin",
+      myceliumApiUrl.value()
+    );
     if (!isAdmin) throw new Error("User must be admin of org.");
     const snapshot = await firestore.collection("admin").doc(orgId).get();
     const { pollId } = StoredSetupSchema.parse(snapshot.data());

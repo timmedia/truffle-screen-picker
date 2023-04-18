@@ -1,7 +1,6 @@
 import { verify } from "jsonwebtoken";
 import { request, gql } from "graphql-request";
 import { z } from "zod";
-import { MYCELIUM_API_URL, MYCELIUM_PUBLIC_ES256_KEY } from "./mycelium";
 
 export const AccessTokenPayloadSchema = z.object({
   userId: z.string().uuid(),
@@ -12,8 +11,11 @@ export const AccessTokenPayloadSchema = z.object({
 });
 
 /* Checks whether user id matches provided access token. */
-export function verifyAccessToken(accessToken: string) {
-  const payload = verify(accessToken, MYCELIUM_PUBLIC_ES256_KEY, {
+export function verifyAccessToken(
+  accessToken: string,
+  myceliumPublicKey: string
+) {
+  const payload = verify(accessToken, myceliumPublicKey, {
     algorithms: ["ES256"],
   });
   return AccessTokenPayloadSchema.parse(payload);
@@ -33,7 +35,11 @@ export const RoleConnectionResponseSchema = z.object({
 });
 
 /* Checks whether user has the admin role for the specified org. */
-export async function verifyUserRole(accessToken: string, role: string) {
+export async function verifyUserRole(
+  accessToken: string,
+  role: string,
+  myceliumApiUrl: string
+) {
   const query = gql`
     query {
       orgUser {
@@ -48,7 +54,7 @@ export async function verifyUserRole(accessToken: string, role: string) {
   `;
   const data = RoleConnectionResponseSchema.parse(
     await request({
-      url: MYCELIUM_API_URL,
+      url: myceliumApiUrl,
       document: query,
       requestHeaders: { "x-access-token": accessToken },
     })
