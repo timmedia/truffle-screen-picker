@@ -1,17 +1,28 @@
-import * as React from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import { Button, MenuItem } from "@mui/material";
-import { saveDiagram } from "../state";
+import { saveDiagram, setBackgroundImageSrc } from "../state";
 import { KeyboardArrowDown, AspectRatio, Upload } from "@mui/icons-material";
 import { StyledMenu } from "./utils";
 
 export default function EditButton() {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const fileUploadRef = useRef<any>();
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const uploadBackgroundImage = (e: ChangeEvent<HTMLInputElement>) => {
+    handleClose();
+    if (!e.target.files) {
+      return;
+    }
+    const file = e.target.files[0];
+    const src = URL.createObjectURL(file);
+    setBackgroundImageSrc(src);
   };
 
   return (
@@ -49,14 +60,20 @@ export default function EditButton() {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            handleClose();
-            saveDiagram();
+            fileUploadRef.current.click();
           }}
           disableRipple
         >
           <Upload />
-          Add Background Image
+          Set Background Image
         </MenuItem>
+        <input
+          ref={fileUploadRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={uploadBackgroundImage}
+        />
       </StyledMenu>
     </>
   );

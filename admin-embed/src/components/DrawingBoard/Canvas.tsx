@@ -1,64 +1,22 @@
-import { useRef, useCallback, useState, useEffect, ChangeEvent } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Layer, Stage, Image } from "react-konva";
-import {
-  Input,
-  Card,
-  Box,
-  Button,
-  Fab,
-  Stack,
-  SpeedDial,
-  SpeedDialAction,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
-  FormGroup,
-  ButtonGroup,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  TextField,
-  DialogActions,
-} from "@mui/material";
-
-import {
-  useDrawingBoard,
-  clearSelection,
-  createCircle,
-  createRectangle,
-  saveDiagram,
-  reset,
-  getState,
-  deleteSelection,
-  setBackgroundImageSrc,
-} from "./state";
+import { Card, Fab, Stack } from "@mui/material";
+import { Delete } from "@mui/icons-material";
+import { useDrawingBoard, clearSelection, deleteSelection } from "./state";
 import { Shape } from "./Shape";
-import {
-  Add,
-  AddBox,
-  Delete,
-  Rectangle,
-  Replay,
-  Save,
-  Upload,
-  AddCircle,
-  Wallpaper,
-  AspectRatio,
-} from "@mui/icons-material";
-import { DrawingBoardState, Shapes } from "./schemas";
+import { DrawingBoardState } from "./schemas";
 import { SetAspectRatio } from "./Menu/SetAspectRatio";
 import Menu from "./Menu";
 
 const shapesSelector = (state: DrawingBoardState) =>
   Object.entries(state.shapes);
 
+const backgroundImageSrcSelector = (state: DrawingBoardState) =>
+  state.backgroundImageSrc;
+
 export function Canvas() {
-  const fileUploadRef = useRef<any>();
   const shapes = useDrawingBoard(shapesSelector);
+  const backgroundImageSrc = useDrawingBoard(backgroundImageSrcSelector);
   const state = useDrawingBoard();
 
   const [backgroundImage, setBackgroundImage] =
@@ -66,28 +24,12 @@ export function Canvas() {
 
   const stageRef = useRef<any>();
 
-  const addVotingArea = (type: Shapes) => {
-    switch (type) {
-      case Shapes.Rectangle:
-        createRectangle(0.5, 0.5);
-        break;
-      case Shapes.Circle:
-        createCircle(0.5, 0.5);
-        break;
-    }
-  };
-
-  const uploadBackgroundImage = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) {
-      return;
-    }
-    const file = e.target.files[0];
-    const src = URL.createObjectURL(file);
-    setBackgroundImageSrc(src);
+  useEffect(() => {
+    if (backgroundImageSrc === null) return setBackgroundImage(null);
     const img = new window.Image();
-    img.src = src;
+    img.src = backgroundImageSrc;
     setBackgroundImage(img);
-  };
+  }, [backgroundImageSrc]);
 
   return (
     <Stack spacing={1} direction="column">
@@ -130,32 +72,10 @@ export function Canvas() {
             state.selected !== null && deleteSelection(state.selected)
           }
           aria-label="delete"
-          sx={{ position: "absolute", right: "170px", bottom: "10px" }}
+          sx={{ position: "absolute", right: "10px", bottom: "10px" }}
         >
           <Delete />
         </Fab>
-        <SpeedDial
-          key="Background"
-          icon={<Wallpaper />}
-          ariaLabel="Add Background"
-          FabProps={{ size: "small" }}
-          sx={{ position: "absolute", right: "60px", bottom: "10px" }}
-        >
-          <SpeedDialAction
-            key="Add Rectangular Area"
-            tooltipTitle="Upload Image"
-            tooltipOpen
-            onClick={() => fileUploadRef.current.click()}
-            icon={<Upload />}
-          />
-          <input
-            ref={fileUploadRef}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={uploadBackgroundImage}
-          />
-        </SpeedDial>
       </Card>
     </Stack>
   );

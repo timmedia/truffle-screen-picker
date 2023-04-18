@@ -37,24 +37,28 @@ export const setBackgroundImageSrc = (src: string) => {
 
 export const createRectangle = (x: number, y: number) => {
   setState((state) => {
-    state.shapes[nanoid()] = {
+    const id = nanoid();
+    state.shapes[id] = {
       type: Shapes.Rectangle,
       width: DEFAULTS.RECT.WIDTH,
       height: DEFAULTS.RECT.HEIGHT,
-      x,
-      y,
+      x: x * state.width - DEFAULTS.RECT.WIDTH / 2,
+      y: (y * state.width) / state.aspectRatio - DEFAULTS.RECT.HEIGHT / 2,
     };
+    state.selected = id;
   });
 };
 
 export const createCircle = (x: number, y: number) => {
   setState((state) => {
-    state.shapes[nanoid()] = {
+    const id = nanoid();
+    state.shapes[id] = {
       type: Shapes.Circle,
       radius: DEFAULTS.CIRCLE.RADIUS,
-      x,
-      y,
+      x: x * state.width - DEFAULTS.RECT.WIDTH / 2,
+      y: (y * state.width) / state.aspectRatio - DEFAULTS.RECT.HEIGHT / 2,
     };
+    state.selected = id;
   });
 };
 
