@@ -3,13 +3,12 @@ import { Layer, Stage, Image } from "react-konva";
 import { Card, Fab, Stack } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { useDrawingBoard, clearSelection, deleteSelection } from "./state";
-import { Shape } from "./Shape";
 import { DrawingBoardState } from "./schemas";
 import { SetAspectRatio } from "./Menu/SetAspectRatio";
 import Menu from "./Menu";
-
-const shapesSelector = (state: DrawingBoardState) =>
-  Object.entries(state.shapes);
+import { Stage as StageContainer } from "konva/lib/Stage";
+import { shapesSelector } from "./selectors";
+import { Rectangle } from "./Rectangle";
 
 const backgroundImageSrcSelector = (state: DrawingBoardState) =>
   state.backgroundImageSrc;
@@ -22,7 +21,7 @@ export function Canvas() {
   const [backgroundImage, setBackgroundImage] =
     useState<HTMLImageElement | null>(null);
 
-  const stageRef = useRef<any>();
+  const stageRef = useRef<StageContainer>(null);
 
   useEffect(() => {
     if (backgroundImageSrc === null) return setBackgroundImage(null);
@@ -56,9 +55,17 @@ export function Canvas() {
             )}
           </Layer>
           <Layer>
-            {shapes.map(([key, shape]) => (
-              <Shape key={key} shape={{ ...shape, id: key }} />
-            ))}
+            {shapes.map(
+              ([key, shape]) =>
+                stageRef.current !== null && (
+                  <Rectangle
+                    key={key}
+                    id={key}
+                    stage={stageRef.current}
+                    shape={shape}
+                  />
+                )
+            )}
           </Layer>
         </Stage>
         <SetAspectRatio

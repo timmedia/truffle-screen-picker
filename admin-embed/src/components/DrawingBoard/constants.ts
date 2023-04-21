@@ -2,25 +2,16 @@ export const DEFAULTS = {
   RECT: {
     STROKE: "#000000",
     FILL: "#ffffff",
-    WIDTH: 150,
-    HEIGHT: 100,
+    WIDTH: 0.1,
+    HEIGHT: 0.1,
     ROTATION: 0,
-  },
-  CIRCLE: {
-    STROKE: "#000000",
-    FILL: "#ffffff",
-    RADIUS: 50,
   },
 };
 
 export const LIMITS = {
   RECT: {
-    MAX: 1000,
-    MIN: 10,
-  },
-  CIRCLE: {
-    MAX: 500,
-    MIN: 5,
+    MAX: 1,
+    MIN: 0.05,
   },
 };
 
