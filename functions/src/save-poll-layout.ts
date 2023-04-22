@@ -21,7 +21,7 @@ const SavePollLayoutData = z.object({
 
 export default functions.https.onCall(async (data) => {
   try {
-    const { accessToken, areas } = SavePollLayoutData.parse(data);
+    const { accessToken, areas, name } = SavePollLayoutData.parse(data);
     const { orgId } = verifyAccessToken(accessToken);
     const isAdmin = await verifyUserRole(accessToken, "Admin");
     if (!isAdmin) throw new Error("User must be admin of org.");
@@ -31,7 +31,7 @@ export default functions.https.onCall(async (data) => {
       .doc(orgId)
       .collection("layouts")
       .doc(layoutId)
-      .set({ areas });
+      .set({ areas, name });
     return { success: true, layoutId };
   } catch (error) {
     console.log(error);
