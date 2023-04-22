@@ -4,8 +4,9 @@ import { z } from "zod";
 import { verifyAccessToken, verifyUserRole } from "./utils";
 import { firestore } from "./admin";
 
-const CreatePollLayoutData = z.object({
+const SavePollLayoutData = z.object({
   accessToken: z.string(),
+  name: z.string(),
   areas: z
     .array(
       z.object({
@@ -20,7 +21,7 @@ const CreatePollLayoutData = z.object({
 
 export default functions.https.onCall(async (data) => {
   try {
-    const { accessToken, areas } = CreatePollLayoutData.parse(data);
+    const { accessToken, areas } = SavePollLayoutData.parse(data);
     const { orgId } = verifyAccessToken(accessToken);
     const isAdmin = await verifyUserRole(accessToken, "Admin");
     if (!isAdmin) throw new Error("User must be admin of org.");
@@ -30,7 +31,7 @@ export default functions.https.onCall(async (data) => {
       .doc(orgId)
       .collection("layouts")
       .doc(layoutId)
-      .update({ areas });
+      .set({ areas });
     return { success: true, layoutId };
   } catch (error) {
     console.log(error);
