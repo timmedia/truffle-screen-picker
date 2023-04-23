@@ -1,14 +1,18 @@
 import { ButtonGroup } from "@mui/material";
-import FileButton from "./File";
 import EditButton from "./Edit";
 import AddButton from "./Add";
+import SaveButton from "./Save";
+import ResetButton from "./Reset";
+import Name from "./Name";
 
 export default function Menu() {
   return (
-    <ButtonGroup variant="contained" aria-label="outlined primary button group">
-      <FileButton />
-      <EditButton />
+    <>
+      <SaveButton />
+      <ResetButton />
       <AddButton />
-    </ButtonGroup>
+      <EditButton />
+      <Name />
+    </>
   );
 }

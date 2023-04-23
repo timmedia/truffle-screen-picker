@@ -6,7 +6,7 @@ import { StyledMenu } from "./utils";
 
 export default function EditButton() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const fileUploadRef = useRef<any>();
+  const fileUploadRef = useRef<HTMLInputElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -36,6 +36,8 @@ export default function EditButton() {
         disableElevation
         onClick={handleClick}
         endIcon={<KeyboardArrowDown />}
+        sx={{ borderRadius: 2, bgcolor: "#151515", color: "white" }}
+        size="small"
       >
         Edit
       </Button>
@@ -56,16 +58,16 @@ export default function EditButton() {
           disableRipple
         >
           <AspectRatio />
-          Set Aspect Ratio
+          Aspect Ratio
         </MenuItem>
         <MenuItem
           onClick={() => {
-            fileUploadRef.current.click();
+            fileUploadRef?.current?.click();
           }}
           disableRipple
         >
           <Upload />
-          Set Background Image
+          Background Image
         </MenuItem>
         <input
           ref={fileUploadRef}
