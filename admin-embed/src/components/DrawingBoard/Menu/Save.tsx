@@ -1,10 +1,10 @@
 import { Save } from "@mui/icons-material";
 import { saveDiagram, useDrawingBoard } from "../state";
 import { Alert, LoadingButton } from "@mui/lab";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
-export default function () {
+export default function SaveButton(props: { onComplete?: () => void }) {
   const [loading, setLoading] = useState(false);
   const disabled = useDrawingBoard(
     (state) =>
@@ -20,6 +20,7 @@ export default function () {
         <Alert severity="success">Layout saved successfully.</Alert>,
         { duration: 2500 }
       );
+      props.onComplete?.();
     } catch (error) {
       console.log(error);
       toast.custom(

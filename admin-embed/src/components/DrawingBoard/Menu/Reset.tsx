@@ -2,7 +2,7 @@ import { Replay } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { reset } from "../state";
 
-export default function () {
+export default function ResetButton() {
   return (
     <Button
       variant="contained"

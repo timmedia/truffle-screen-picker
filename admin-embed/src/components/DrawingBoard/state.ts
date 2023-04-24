@@ -2,32 +2,63 @@ import { createStore } from "@halka/state";
 import produce from "immer";
 import { nanoid } from "nanoid";
 
-import { DEFAULTS, LIMITS } from "./constants";
+import { DEFAULTS } from "./constants";
 import { DrawingBoardState } from "./schemas";
-import { clamp } from "../../utils";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Rect } from "konva/lib/shapes/Rect";
 import { Stage } from "konva/lib/Stage";
+import { savePollLayout } from "../../firebase";
+import { getAccessToken } from "@trufflehq/sdk";
+import { v4 as uuidv4 } from "uuid";
+import { PollLayout } from "../../schemas";
 
 const baseState: DrawingBoardState = {
   selected: null,
   width: Math.min(window.innerWidth - 48, 700),
+  name: "New Layout",
   aspectRatio: 16 / 9,
   backgroundImageSrc: null,
-  shapes: {},
+  id: uuidv4(),
+  areas: {},
 };
 
-export const useDrawingBoard = createStore({ ...baseState });
+export const useDrawingBoard = createStore({ ...baseState, id: uuidv4() });
 
 const setState: (fn: (state: DrawingBoardState) => void) => void = (fn) =>
   useDrawingBoard.set(produce(fn));
 
-export const saveDiagram = () => {
-  // TODO
+export const saveDiagram = async () => {
+  const state = useDrawingBoard.get();
+  const result = await savePollLayout({
+    accessToken: await getAccessToken(),
+    areas: Object.values(state.areas),
+    name: state.name,
+    id: state.id,
+  });
+  reset();
+  return result.data;
+};
+
+export const loadLayout = (layout: PollLayout & { id: string }) => {
+  reset();
+  setState((state) => {
+    state.name = layout.name;
+    state.id = layout.id;
+    state.areas = layout.areas.reduce(
+      (obj, curr) => ({ ...obj, [nanoid()]: curr }),
+      {} as any
+    );
+    console.log(
+      layout.areas.reduce(
+        (obj, curr) => ({ ...obj, [nanoid()]: curr }),
+        {} as any
+      )
+    );
+  });
 };
 
 export const reset = () => {
-  useDrawingBoard.set(baseState);
+  useDrawingBoard.set({ ...baseState, id: uuidv4() });
 };
 
 export const setBackgroundImageSrc = (src: string) => {
@@ -36,10 +67,22 @@ export const setBackgroundImageSrc = (src: string) => {
   });
 };
 
+export const setWidth = (width: number) => {
+  setState((state) => {
+    state.width = width;
+  });
+};
+
+export const setName = (name: string) => {
+  setState((state) => {
+    state.name = name;
+  });
+};
+
 export const createRectangle = (x: number, y: number) => {
   setState((state) => {
     const id = nanoid();
-    state.shapes[id] = {
+    state.areas[id] = {
       width: DEFAULTS.RECT.WIDTH,
       height: DEFAULTS.RECT.HEIGHT,
       x: x - DEFAULTS.RECT.WIDTH / 2,
@@ -63,7 +106,7 @@ export const clearSelection = () => {
 export const deleteSelection = (id: string) => {
   setState((state) => {
     state.selected = null;
-    delete state.shapes[id];
+    delete state.areas[id];
   });
 };
 
@@ -73,7 +116,7 @@ export const moveShape = (
   event: KonvaEventObject<Event>
 ) => {
   setState((state) => {
-    const shape = state.shapes[id];
+    const shape = state.areas[id];
     if (shape) {
       shape.x = event.target.x() / stage.width();
       shape.y = event.target.y() / stage.height();
@@ -98,12 +141,13 @@ export const transformRectangleShape = (
   node.scaleX(1);
   node.scaleY(1);
 
-  setState((state: any) => {
-    const shape = state.shapes[id];
-    if (shape) {
-      shape.x = node.x() / stage.width();
-      shape.y = node.y() / stage.height();
+  const { x, y } = node.getAbsolutePosition();
 
+  setState((state: DrawingBoardState) => {
+    const shape = state.areas[id];
+    if (shape) {
+      shape.x = x / stage.width();
+      shape.y = y / stage.height();
       shape.width = (node.width() * scaleX) / stage.width();
       shape.height = (node.height() * scaleY) / stage.height();
     }

@@ -2,7 +2,7 @@ import { TextField } from "@mui/material";
 import { setName, useDrawingBoard } from "../state";
 import { ChangeEvent } from "react";
 
-export default function () {
+export default function NameInput() {
   const name = useDrawingBoard((state) => state.name);
   const onChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setName(event.target.value);

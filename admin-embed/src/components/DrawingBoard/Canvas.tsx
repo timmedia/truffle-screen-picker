@@ -4,11 +4,10 @@ import { Card, Fab, Stack } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { useDrawingBoard, clearSelection, deleteSelection } from "./state";
 import { DrawingBoardState } from "./schemas";
-import { SetAspectRatio } from "./Menu/SetAspectRatio";
-import Menu from "./Menu";
 import { Stage as StageContainer } from "konva/lib/Stage";
 import { shapesSelector } from "./selectors";
 import { Rectangle } from "./Rectangle";
+import { setWidth } from "./state";
 
 const backgroundImageSrcSelector = (state: DrawingBoardState) =>
   state.backgroundImageSrc;
@@ -30,14 +29,23 @@ export function Canvas() {
     setBackgroundImage(img);
   }, [backgroundImageSrc]);
 
+  useEffect(() => {
+    const updateWindowDimensions = () => {
+      setWidth(Math.min(window.innerWidth - 48, 700));
+    };
+    window.addEventListener("resize", updateWindowDimensions);
+    return () => window.removeEventListener("resize", updateWindowDimensions);
+  }, []);
+
   return (
-    <Stack spacing={1} direction="column">
-      <Stack spacing={1} direction="row">
-        <Menu />
-      </Stack>
+    <Stack spacing={1} direction="column" sx={{ pt: 2 }}>
       <Card
         variant="outlined"
-        sx={{ position: "relative", width: state.width }}
+        sx={{
+          position: "relative",
+          width: state.width,
+          background: "lightgrey",
+        }}
       >
         <Stage
           ref={stageRef}
@@ -68,9 +76,6 @@ export function Canvas() {
             )}
           </Layer>
         </Stage>
-        <SetAspectRatio
-          sx={{ position: "absolute", right: "120px", bottom: "10px" }}
-        />
         <Fab
           size="small"
           disabled={state.selected === null}

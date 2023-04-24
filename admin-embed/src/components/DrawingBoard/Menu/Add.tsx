@@ -11,7 +11,7 @@ export default function AddButton() {
       sx={{ borderRadius: 2, bgcolor: "#151515", color: "white" }}
       size="small"
     >
-      Add area
+      Add Area
     </Button>
   );
 }

@@ -1,6 +1,6 @@
 import { ChangeEvent, useRef, useState } from "react";
 import { Button, MenuItem } from "@mui/material";
-import { saveDiagram, setBackgroundImageSrc } from "../state";
+import { setBackgroundImageSrc } from "../state";
 import { KeyboardArrowDown, AspectRatio, Upload } from "@mui/icons-material";
 import { StyledMenu } from "./utils";
 
@@ -50,7 +50,9 @@ export default function EditButton() {
         open={open}
         onClose={handleClose}
       >
-        <MenuItem
+        {
+          // TODO: implement
+          /* <MenuItem
           onClick={() => {
             handleClose();
             saveDiagram();
@@ -59,7 +61,8 @@ export default function EditButton() {
         >
           <AspectRatio />
           Aspect Ratio
-        </MenuItem>
+        </MenuItem> */
+        }
         <MenuItem
           onClick={() => {
             fileUploadRef?.current?.click();

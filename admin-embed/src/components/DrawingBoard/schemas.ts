@@ -7,10 +7,12 @@ export interface RectangleItem {
 
 export interface DrawingBoardState {
   selected: string | null;
+  id: string;
   aspectRatio: number;
   width: number;
   backgroundImageSrc: string | null; // TODO
-  shapes: {
+  name: string;
+  areas: {
     [key: string]: RectangleItem;
   };
 }

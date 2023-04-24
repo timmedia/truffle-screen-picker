@@ -1,6 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { Rect as KonvaRectangle, Line, Transformer } from "react-konva";
-
 import {
   selectShape,
   transformRectangleShape,
@@ -160,6 +159,7 @@ export function Rectangle({
 
   const handleDrag = useCallback(
     (event: KonvaEventObject<DragEvent>) => {
+      setLines([]);
       moveShape(id, stage, event);
     },
     [id]
@@ -258,6 +258,7 @@ export function Rectangle({
         y={shape.y * stage.height()}
         width={shape.width * stage.width()}
         height={shape.height * stage.height()}
+        strokeScaleEnabled={false}
       />
       {isSelected && (
         <Transformer
