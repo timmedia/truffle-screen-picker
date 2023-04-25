@@ -81,6 +81,7 @@ export function MouseVisualizer(props: {
 
   return (
     <span
+      key="MouseVisualizer"
       onMouseMove={draw}
       onClick={(event) =>
         props.layout === null ? props.onClick(event) : void null
@@ -88,6 +89,7 @@ export function MouseVisualizer(props: {
     >
       <canvas
         ref={canvasRef}
+        key="MouseVisualizerCanvas"
         style={{
           position: "absolute",
           top: 0,
@@ -123,8 +125,9 @@ export function MouseVisualizer(props: {
             onMouseMove={() => setActiveArea(-1)}
           />
           {props.layout.areas.map(({ x, y, width, height }, index) => (
-            <>
+            <g key={`group-${index}`}>
               <line
+                key={`top-${index}`}
                 x1={x - STROKE_WIDTH / 2}
                 y1={y}
                 x2={x + width + STROKE_WIDTH / 2}
@@ -133,6 +136,7 @@ export function MouseVisualizer(props: {
                 strokeWidth={STROKE_WIDTH * aspectRatio}
               />
               <line
+                key={`bottom-${index}`}
                 x1={x - STROKE_WIDTH / 2}
                 y1={y + height}
                 x2={x + width + STROKE_WIDTH / 2}
@@ -142,6 +146,7 @@ export function MouseVisualizer(props: {
                 strokeLinejoin="round"
               />
               <line
+                key={`left-${index}`}
                 x1={x}
                 y1={y}
                 x2={x}
@@ -151,6 +156,7 @@ export function MouseVisualizer(props: {
                 strokeLinejoin="round"
               />
               <line
+                key={`right-${index}`}
                 x1={x + width}
                 y1={y - STROKE_WIDTH / 2}
                 x2={x + width}
@@ -160,7 +166,7 @@ export function MouseVisualizer(props: {
                 strokeLinejoin="round"
               />
               <rect
-                key={index}
+                key={`area-${index}`}
                 width={width}
                 height={height}
                 x={x}
@@ -176,7 +182,7 @@ export function MouseVisualizer(props: {
                   cursor: "pointer",
                 }}
               />
-            </>
+            </g>
           ))}
         </svg>
       )}

@@ -54,7 +54,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    console.log(embedState);
     embed.setStyles({
       "pointer-events": embedState === 2 ? "auto" : "none",
     });

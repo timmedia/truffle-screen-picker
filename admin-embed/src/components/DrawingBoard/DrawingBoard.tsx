@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import {
   Alert,
   AppBar,
@@ -15,14 +17,13 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
+import { Close, Dashboard, Delete, Edit, NoteAdd } from "@mui/icons-material";
+import { TruffleOrg, getAccessToken, org as orgClient } from "@trufflehq/sdk";
+
 import { Canvas } from "./Canvas";
 import { loadLayout, reset } from "./state";
-import { useCallback, useEffect, useState } from "react";
-import { TruffleOrg, getAccessToken, org as orgClient } from "@trufflehq/sdk";
 import { deletePollLayout, onCollSnapshot } from "../../firebase";
 import { PollLayout } from "../../schemas";
-import { Close, Dashboard, Delete, Edit, NoteAdd } from "@mui/icons-material";
-import toast from "react-hot-toast";
 import SaveButton from "./Menu/Save";
 import ResetButton from "./Menu/Reset";
 import AddButton from "./Menu/Add";
@@ -77,7 +78,9 @@ export function DrawingBoard() {
     } catch (error) {
       console.log(error);
       toast.custom(
-        <Alert severity="error">Error: {(error as Error)?.message}</Alert>,
+        <Alert severity="error">
+          Error: {(error as Error)?.message || `${error}`}
+        </Alert>,
         {
           duration: 5000,
         }
@@ -110,6 +113,7 @@ export function DrawingBoard() {
       <List>
         {pollLayouts?.map((layout) => (
           <ListItem
+            key={layout.id}
             secondaryAction={
               <>
                 <Stack spacing={2} direction="row">
@@ -155,8 +159,8 @@ export function DrawingBoard() {
       </Button>
       <Dialog fullScreen open={open} onClose={handleClose}>
         <AppBar sx={{ position: "relative" }}>
-          <Toolbar>
-            <Stack direction="row" spacing={1} alignItems="center">
+          <Toolbar disableGutters sx={{ px: "10px" }}>
+            <Stack direction="row" spacing={0.6} alignItems="center">
               <SaveButton onComplete={handleClose} />
               <ResetButton />
               <AddButton />
@@ -169,10 +173,10 @@ export function DrawingBoard() {
                   handleClose();
                   reset();
                 }}
-                startIcon={<Close />}
+                endIcon={<Close />}
                 sx={{ borderRadius: 2, bgcolor: "#151515", color: "white" }}
               >
-                Close
+                Exit
               </Button>
             </Stack>
           </Toolbar>

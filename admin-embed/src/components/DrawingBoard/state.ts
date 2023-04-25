@@ -48,12 +48,6 @@ export const loadLayout = (layout: PollLayout & { id: string }) => {
       (obj, curr) => ({ ...obj, [nanoid()]: curr }),
       {} as any
     );
-    console.log(
-      layout.areas.reduce(
-        (obj, curr) => ({ ...obj, [nanoid()]: curr }),
-        {} as any
-      )
-    );
   });
 };
 
@@ -76,6 +70,12 @@ export const setWidth = (width: number) => {
 export const setName = (name: string) => {
   setState((state) => {
     state.name = name;
+  });
+};
+
+export const setAspectRatio = (ratio: number) => {
+  setState((state) => {
+    state.aspectRatio = ratio;
   });
 };
 

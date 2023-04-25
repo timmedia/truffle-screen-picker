@@ -23,7 +23,7 @@ export default function CreatePollButton(props: {
   const [pollLayouts, setPollLayouts] = useState<
     (PollLayout & { id: string })[] | undefined
   >(undefined);
-  const [pollingMode, setPollingMode] = useState<
+  const [selectedPollLayout, setSelectedPollLayout] = useState<
     null | (PollLayout & { id: string })
   >(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -44,7 +44,7 @@ export default function CreatePollButton(props: {
       const accessToken = await getAccessToken();
       const result = await createPoll({
         accessToken,
-        layoutId: pollingMode?.id ?? null,
+        layout: selectedPollLayout,
       });
       if (!result.success) throw result.error;
       toast.custom(
@@ -58,14 +58,15 @@ export default function CreatePollButton(props: {
       console.log(error);
       toast.custom(
         <Alert severity="error">
-          Could not start poll. <code>{(error as Error).message}</code>.
+          Could not start poll.{" "}
+          <code>{(error as Error).message || `${error}`}</code>.
         </Alert>,
         { duration: 2500 }
       );
     } finally {
       setLoading(false);
     }
-  }, [pollingMode]);
+  }, [selectedPollLayout]);
 
   const disabled =
     typeof props.pollId === "string" ||
@@ -94,20 +95,22 @@ export default function CreatePollButton(props: {
         startIcon={<Add />}
         variant="contained"
       >
-        Create New Poll
+        Start New Poll
       </LoadingButton>
       <Tooltip title="Select Poll Layout" sx={{ width: "200px" }}>
-        <Button
-          color="success"
-          aria-controls={open ? "basic-menu" : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
-          onClick={handleClick}
-          disabled={loading || disabled}
-          endIcon={<KeyboardArrowDown />}
-        >
-          <strong>{pollingMode?.name ?? "Clustering"}</strong>
-        </Button>
+        <>
+          <Button
+            color="success"
+            aria-controls={open ? "basic-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+            onClick={handleClick}
+            disabled={loading || disabled}
+            endIcon={<KeyboardArrowDown />}
+          >
+            <strong>{selectedPollLayout?.name ?? "Clustering"}</strong>
+          </Button>
+        </>
       </Tooltip>
       <Menu
         id="basic-menu"
@@ -121,16 +124,17 @@ export default function CreatePollButton(props: {
         <MenuItem
           onClick={() => {
             handleClose();
-            setPollingMode(null);
+            setSelectedPollLayout(null);
           }}
         >
           <em>Clustering</em>
         </MenuItem>
         {pollLayouts?.map((layout) => (
           <MenuItem
+            key={layout.id}
             onClick={() => {
               handleClose();
-              setPollingMode(layout);
+              setSelectedPollLayout(layout);
             }}
           >
             {layout.name}

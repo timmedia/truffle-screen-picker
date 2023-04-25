@@ -24,7 +24,9 @@ export default function SaveButton(props: { onComplete?: () => void }) {
     } catch (error) {
       console.log(error);
       toast.custom(
-        <Alert severity="error">Error: {(error as Error)?.message}</Alert>,
+        <Alert severity="error">
+          Error: {(error as Error)?.message || `${error}`}
+        </Alert>,
         {
           duration: 2500,
         }

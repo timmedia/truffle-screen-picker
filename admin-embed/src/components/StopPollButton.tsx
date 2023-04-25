@@ -27,7 +27,8 @@ export function StopPollButton(props: {
       console.log(error);
       toast.custom(
         <Alert severity="error">
-          Could not stop poll. <code>{(error as Error).message}</code>.
+          Could not stop poll.{" "}
+          <code>{(error as Error).message || `${error}`}</code>.
         </Alert>,
         { duration: 2500 }
       );
