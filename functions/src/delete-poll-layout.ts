@@ -15,14 +15,15 @@ export default functions.https.onCall(async (data) => {
     const isAdmin = await verifyUserRole(accessToken, "Admin");
     if (!isAdmin) throw new Error("User must be admin of org.");
     await firestore
-      .collection("admin")
+      .collection("orgs")
       .doc(orgId)
       .collection("layouts")
       .doc(layoutId)
       .delete();
+    functions.logger.info(`Deleted Layout ${layoutId}`);
     return { success: true };
   } catch (error) {
-    console.log(error);
+    functions.logger.error(error);
     return { success: false, error };
   }
 });

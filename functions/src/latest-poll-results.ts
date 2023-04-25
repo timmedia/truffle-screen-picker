@@ -1,16 +1,13 @@
 import * as functions from "firebase-functions";
 import { firestore } from "./admin";
-import { StoredSetupSchema } from "./schemas";
-import { z } from "zod";
+import type { StoredSetupSchema } from "./schemas";
 
 export default functions.https.onRequest(async (request, response) => {
   const orgId = request.query?.orgId;
   if (typeof orgId !== "string") return response.redirect("/404.html");
-  const snapshot = await firestore.collection("admin").doc(orgId).get();
+  const snapshot = await firestore.collection("orgs").doc(orgId).get();
   if (!snapshot.exists) return response.redirect("/404.html");
-  const { pollId, previousPollId } = snapshot.data() as z.infer<
-    typeof StoredSetupSchema
-  >;
+  const { pollId } = snapshot.data() as StoredSetupSchema;
   let queryString = Object.entries(request.query)
     .filter(([key]) => key !== "orgId")
     .map(
@@ -21,10 +18,12 @@ export default functions.https.onRequest(async (request, response) => {
   queryString = queryString.length > 0 ? `&${queryString}` : "";
   if (typeof pollId === "string") {
     return response.redirect(`/pollResults?pollId=${pollId}${queryString}`);
-  } else if (previousPollId?.length > 0) {
-    return response.redirect(
-      `/pollResults?pollId=${previousPollId.at(-1)}${queryString}`
-    );
+    // TODO: implement automatic redirection to latest poll
+
+    // } else if (previousPollId?.length > 0) {
+    //   return response.redirect(
+    //     `/pollResults?pollId=${previousPollId.at(-1)}${queryString}`
+    //   );
   } else {
     return response.redirect("/404.html");
   }

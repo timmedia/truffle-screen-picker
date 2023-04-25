@@ -3,6 +3,7 @@ import { request, gql } from "graphql-request";
 import { z } from "zod";
 import { defineString } from "firebase-functions/params";
 
+// from .env
 const MYCELIUM_PUBLIC_ES256_KEY = defineString("MYCELIUM_PUBLIC_ES256_KEY");
 const MYCELIUM_API_URL = defineString("MYCELIUM_API_URL");
 

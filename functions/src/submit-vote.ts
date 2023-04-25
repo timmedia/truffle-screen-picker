@@ -17,6 +17,7 @@ export default functions.https.onCall(async (data) => {
     await db.ref(`polls/${pollId}/${userId}`).set([x, y]);
     return { success: true };
   } catch (error) {
+    functions.logger.error(error);
     return { success: false, error };
   }
 });

@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import { z } from "zod";
 import { verifyAccessToken, verifyUserRole } from "./utils";
 import { firestore } from "./admin";
-import { StoredSetupSchema } from "./schemas";
+import type { StoredSetupSchema } from "./schemas";
 
 const StopPollData = z.object({
   accessToken: z.string(),
@@ -15,19 +15,25 @@ export default functions.https.onCall(async (data) => {
     const { orgId } = verifyAccessToken(accessToken);
     const isAdmin = await verifyUserRole(accessToken, "Admin");
     if (!isAdmin) throw new Error("User must be admin of org.");
-    const snapshot = await firestore.collection("admin").doc(orgId).get();
-    const { pollId } = snapshot.data() as z.infer<typeof StoredSetupSchema>;
+    const snapshot = await firestore.collection("orgs").doc(orgId).get();
+    const { pollId } = snapshot.data() as StoredSetupSchema;
     if (pollId === null) throw new Error("Specified org has no active poll.");
-    await firestore
-      .collection("admin")
-      .doc(orgId)
-      .update({
+    await Promise.all([
+      firestore.collection("orgs").doc(orgId).update({
         pollId: null,
-        previousPollId: admin.firestore.FieldValue.arrayUnion(pollId),
-      });
+        layout: null,
+      }),
+      firestore
+        .collection("orgs")
+        .doc(orgId)
+        .collection("polls")
+        .doc(pollId)
+        .update({ stoppedAt: admin.firestore.FieldValue.serverTimestamp() }),
+    ]);
+    functions.logger.info(`Stopped Poll ${pollId}`);
     return { success: true };
   } catch (error) {
-    console.log(error);
+    functions.logger.error(error);
     return { success: false, error };
   }
 });

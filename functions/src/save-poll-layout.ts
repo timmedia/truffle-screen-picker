@@ -1,40 +1,30 @@
 import * as functions from "firebase-functions";
-import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { verifyAccessToken, verifyUserRole } from "./utils";
 import { firestore } from "./admin";
+import { PollLayout } from "./schemas";
 
-const SavePollLayoutData = z.object({
+const SavePollLayoutData = PollLayout.extend({
   accessToken: z.string(),
-  name: z.string(),
-  areas: z
-    .array(
-      z.object({
-        x: z.number().gte(0).lte(1),
-        y: z.number().gte(0).lte(1),
-        width: z.number().gte(0).lte(1),
-        height: z.number().gte(0).lte(1),
-      })
-    )
-    .min(1),
+  id: z.string().uuid(),
 });
 
 export default functions.https.onCall(async (data) => {
   try {
-    const { accessToken, areas, name } = SavePollLayoutData.parse(data);
+    const { accessToken, areas, name, id } = SavePollLayoutData.parse(data);
     const { orgId } = verifyAccessToken(accessToken);
     const isAdmin = await verifyUserRole(accessToken, "Admin");
     if (!isAdmin) throw new Error("User must be admin of org.");
-    const layoutId = uuidv4();
     await firestore
-      .collection("admin")
+      .collection("orgs")
       .doc(orgId)
       .collection("layouts")
-      .doc(layoutId)
+      .doc(id)
       .set({ areas, name });
-    return { success: true, layoutId };
+    functions.logger.info(`Saved Layout ${id}`);
+    return { success: true };
   } catch (error) {
-    console.log(error);
+    functions.logger.error(error);
     return { success: false, error };
   }
 });
