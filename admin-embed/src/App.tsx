@@ -1,33 +1,80 @@
-import { useEffect, useState } from "react";
-import { Add, Stop } from "@mui/icons-material";
-import { collection, doc, onSnapshot } from "firebase/firestore";
-import { firestore, functions } from "./firebase";
-import { httpsCallable } from "firebase/functions";
+import { SyntheticEvent, useEffect, useState } from "react";
+import { hostingBaseURL, onDocSnapshot } from "./firebase";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
-import LoadingButton from "@mui/lab/LoadingButton";
 import ListItemText from "@mui/material/ListItemText";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
-import { ButtonGroup, Stack } from "@mui/material";
+import {
+  Chip,
+  CssBaseline,
+  Stack,
+  ThemeProvider,
+  Tooltip,
+  createTheme,
+} from "@mui/material";
 import Box from "@mui/material/Box";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { z } from "zod";
 import {
   embed,
-  getAccessToken,
   org as orgClient,
   TruffleOrg,
   TruffleUser,
   user as userClient,
 } from "@trufflehq/sdk";
-import { CreatePollData, StopPollData, StoredSetupSchema } from "./schemas";
+import { StoredSetupSchema } from "./schemas";
 import "./App.css";
 import { DrawingBoard } from "./components/DrawingBoard/DrawingBoard";
+import CreatePollButton from "./components/CreatePollButton";
+import { StopPollButton } from "./components/StopPollButton";
+import { Toaster } from "react-hot-toast";
+
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+    background: {
+      default: "#272727",
+    },
+    primary: {
+      main: "rgb(146, 227, 227)",
+    },
+    secondary: {
+      main: "rgb(255, 147, 192)",
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 50,
+          boxShadow: ["none"],
+          ":hover": {
+            boxShadow: ["none"],
+          },
+          textTransform: "none",
+        },
+        startIcon: {
+          paddingLeft: "5px",
+        },
+      },
+    },
+    MuiButtonGroup: {
+      styleOverrides: {
+        root: {
+          boxShadow: ["none"],
+        },
+      },
+    },
+    MuiListItem: {
+      styleOverrides: {
+        root: {
+          padding: "8px 0px",
+        },
+      },
+    },
+  },
+});
 
 function App() {
   const [storedSetup, setStoredSetup] = useState<
@@ -36,23 +83,21 @@ function App() {
 
   const [org, setOrg] = useState<TruffleOrg | undefined>(undefined);
   const [user, setUser] = useState<TruffleUser | undefined>(undefined);
-
-  const [createNewPollLoading, setCreateNewPollLoading] = useState(false);
-  const [stopCurrentPollLoading, setStopCurrentPollLoading] = useState(false);
+  const [tabIndex, setTabIndex] = useState(0);
 
   useEffect(() => {
     embed.setStyles({
-      height: "640px",
+      height: `${document.body.scrollHeight}px`,
+      margin: "24px 0px",
+      "border-radius": "12px",
     });
-  }, []);
+  }, [document.body.scrollHeight, tabIndex]);
 
   useEffect(() => {
     if (org === undefined) return;
-    const docRef = doc(collection(firestore, "/admin"), org.id);
-    const unsubscribe = onSnapshot(docRef, (doc) => {
-      const data = StoredSetupSchema.parse(doc.data());
-      setStoredSetup(data);
-    });
+    const unsubscribe = onDocSnapshot("/orgs", org.id, (data) =>
+      setStoredSetup(StoredSetupSchema.parse(data))
+    );
     return () => unsubscribe();
   }, [org]);
 
@@ -74,177 +119,184 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const createNewPoll = async () => {
-    setCreateNewPollLoading(true);
-    try {
-      if (user === undefined || org === undefined) return;
-      const createPoll = httpsCallable<
-        z.infer<typeof CreatePollData>,
-        { success: boolean; pollId?: string; error?: Error }
-      >(functions, "createPoll");
-      const result = await createPoll({
-        accessToken: await getAccessToken(),
-      });
-      console.log(result);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setCreateNewPollLoading(false);
-    }
-  };
-
-  const stopCurrentPoll = async () => {
-    setStopCurrentPollLoading(true);
-    try {
-      if (user === undefined || org === undefined) return;
-      const stopCurrentPoll = httpsCallable<
-        z.infer<typeof StopPollData>,
-        { success: boolean; pollId?: string }
-      >(functions, "stopCurrentPoll");
-      const result = await stopCurrentPoll({
-        accessToken: await getAccessToken(),
-      });
-      console.log(result);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setStopCurrentPollLoading(false);
-    }
-  };
-
-  const [value, setValue] = useState(0);
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+  const handleChange = (event: SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
   };
 
   return (
     <>
-      <Box sx={{ width: "100%", color: "whitesmoke", p: 0, m: 0 }}>
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-          <Tabs
-            value={value}
-            onChange={handleChange}
-            aria-label="basic tabs example"
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <Box sx={{ width: "100%", color: "whitesmoke", p: 0, m: 0 }}>
+          {/* <Stack
+            spacing={1}
+            direction="row"
+            sx={{ py: 2, px: 0, bgcolor: "transparent" }}
           >
-            <Tab sx={{ color: "white" }} label="Overview" {...a11yProps(0)} />
-            <Tab
-              sx={{ color: "white" }}
-              label="Control Poll"
-              {...a11yProps(1)}
-            />
-            <Tab
-              sx={{ color: "white" }}
-              label="Create Result Overlay"
-              {...a11yProps(2)}
-            />
-          </Tabs>
-        </Box>
-        <TabPanel value={value} index={0}>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary={`Org: ${org?.name}`}
-                secondary={org?.id ?? "-"}
-                secondaryTypographyProps={{ color: "#888" }}
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary={`User: ${user?.name ?? "-"}`}
-                secondary={user?.id ?? "-"}
-                secondaryTypographyProps={{ color: "#888" }}
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary={`Poll active: ${
-                  typeof storedSetup?.pollId === "string" ? "Yes" : "No"
-                }`}
-                secondary={storedSetup?.pollId ?? "-"}
-                secondaryTypographyProps={{ color: "#888" }}
-              />
-            </ListItem>
-          </List>
-        </TabPanel>
-        <TabPanel value={value} index={1}>
-          <List>
-            <ListItem>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => setTabIndex(0)}
+              sx={{
+                borderRadius: 2,
+                bgcolor: "#333",
+                color: "white",
+                textTransform: "none",
+                fontSize: "14px",
+                ":disabled": { bgcolor: "white", color: "#151515" },
+                ":hover": { bgcolor: "#444" },
+              }}
+              disabled={tabIndex === 0}
+            >
+              Control Poll
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => setTabIndex(1)}
+              sx={{
+                borderRadius: 2,
+                bgcolor: "#333",
+                color: "white",
+                textTransform: "none",
+                fontSize: "14px",
+                ":disabled": { bgcolor: "white", color: "#151515" },
+                ":hover": { bgcolor: "#444" },
+              }}
+              disabled={tabIndex === 1}
+            >
+              Manage Layouts
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => setTabIndex(2)}
+              sx={{
+                borderRadius: 2,
+                bgcolor: "#333",
+                color: "white",
+                textTransform: "none",
+                fontSize: "14px",
+                ":disabled": { bgcolor: "white", color: "#151515" },
+                ":hover": { bgcolor: "#444" },
+              }}
+              disabled={tabIndex === 2}
+            >
+              Information
+            </Button>
+          </Stack> */}
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs
+              value={tabIndex}
+              onChange={handleChange}
+              aria-label="main menu"
+            >
+              <Tab label="Control Poll" {...a11yProps(0)} />
+              <Tab label="Poll Layouts" {...a11yProps(1)} />
+              <Tab label="Information" {...a11yProps(2)} />
+            </Tabs>
+          </Box>
+          <Box>
+            <TabPanel value={tabIndex} index={0}>
+              <List sx={{ pt: 0, mt: 0 }}>
+                <ListItem>
+                  <Stack spacing={1} direction="row">
+                    <CreatePollButton
+                      orgId={org?.id}
+                      userId={user?.id}
+                      pollId={storedSetup?.pollId}
+                    />
+                    <StopPollButton
+                      orgId={org?.id}
+                      userId={user?.id}
+                      pollId={storedSetup?.pollId}
+                    />
+                  </Stack>
+                </ListItem>
+                <ListItem>
+                  {org?.id && (
+                    <ListItemText
+                      primary="Latest Poll Results"
+                      secondary={
+                        <a
+                          href={`${hostingBaseURL}/latestPollResults?orgId=${org.id}`}
+                          target="_blank"
+                        >
+                          {`${hostingBaseURL}/latestPollResults?orgId=${org.id}`}
+                        </a>
+                      }
+                    />
+                  )}
+                </ListItem>
+                <ListItem>
+                  {storedSetup?.pollId && (
+                    <ListItemText
+                      primary="Current Poll Results (permalink)"
+                      secondary={
+                        <a
+                          href={`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}`}
+                          target="_blank"
+                        >
+                          {`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}`}
+                        </a>
+                      }
+                    />
+                  )}
+                  {!storedSetup?.pollId && (
+                    <ListItemText
+                      primary="Current Poll Results (permalink)"
+                      secondary="-"
+                      secondaryTypographyProps={{ color: "#888" }}
+                    />
+                  )}
+                </ListItem>
+              </List>
+            </TabPanel>
+            <TabPanel value={tabIndex} index={1}>
+              <DrawingBoard />
+            </TabPanel>
+            <TabPanel value={tabIndex} index={2}>
+              <List sx={{ m: 0, p: 0 }} dense>
+                <ListItem>
+                  <ListItemText
+                    primary={`Org: ${org?.name}`}
+                    secondary={org?.id ?? "-"}
+                    secondaryTypographyProps={{ color: "#888" }}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary={`User: ${user?.name ?? "-"}`}
+                    secondary={user?.id ?? "-"}
+                    secondaryTypographyProps={{ color: "#888" }}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary={`Poll active: ${
+                      typeof storedSetup?.pollId === "string" ? "Yes" : "No"
+                    }`}
+                    secondary={storedSetup?.pollId ?? "-"}
+                    secondaryTypographyProps={{ color: "#888" }}
+                  />
+                </ListItem>
+              </List>
               <Stack spacing={1} direction="row">
-                <ButtonGroup
-                  variant="contained"
-                  aria-label="outlined primary button group"
-                >
-                  <LoadingButton
-                    disabled={typeof storedSetup?.pollId === "string"}
-                    loading={createNewPollLoading}
-                    color="success"
-                    loadingPosition="start"
-                    onClick={createNewPoll}
-                    sx={{ ":disabled": { bgcolor: "#555" } }}
-                    startIcon={<Add />}
-                    variant="contained"
-                  >
-                    Create New Poll
-                  </LoadingButton>
-                  <LoadingButton
-                    disabled={typeof storedSetup?.pollId !== "string"}
-                    loading={stopCurrentPollLoading}
-                    color="error"
-                    loadingPosition="start"
-                    onClick={stopCurrentPoll}
-                    sx={{ ":disabled": { bgcolor: "#555" } }}
-                    startIcon={<Stop />}
-                    variant="contained"
-                  >
-                    Stop Current Poll
-                  </LoadingButton>
-                </ButtonGroup>
+                <Tooltip title="App Version">
+                  <Chip label={import.meta.env.VITE_APP_VERSION} />
+                </Tooltip>
+                <Tooltip title="Mode">
+                  <Chip label={import.meta.env.MODE} />
+                </Tooltip>
+                <Tooltip title="Firebase Project ID">
+                  <Chip label={import.meta.env.VITE_FIREBASE_PROJECT_ID} />
+                </Tooltip>
               </Stack>
-            </ListItem>
-            <ListItem>
-              {org?.id && (
-                <ListItemText
-                  primary="Latest Poll Results"
-                  secondary={
-                    <a
-                      href={`https://truffle-demos.firebaseapp.com/latestPollResults?orgId=${org.id}`}
-                      target="_blank"
-                    >
-                      {`https://truffle-demos.firebaseapp.com/latestPollResults?orgId=${org.id}`}
-                    </a>
-                  }
-                />
-              )}
-            </ListItem>
-            <ListItem>
-              {storedSetup?.pollId && (
-                <ListItemText
-                  primary="Current Poll Results (permalink)"
-                  secondary={
-                    <a
-                      href={`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.pollId}`}
-                      target="_blank"
-                    >
-                      {`https://truffle-demos.firebaseapp.com/pollResults?pollId=${storedSetup.pollId}`}
-                    </a>
-                  }
-                />
-              )}
-              {!storedSetup?.pollId && (
-                <ListItemText
-                  primary="Current Poll Results (permalink)"
-                  secondary="-"
-                  secondaryTypographyProps={{ color: "#888" }}
-                />
-              )}
-            </ListItem>
-          </List>
-        </TabPanel>
-        <TabPanel value={value} index={2}>
-          <DrawingBoard />
-        </TabPanel>
-      </Box>
+            </TabPanel>
+          </Box>
+        </Box>
+        <Toaster position="bottom-center" />
+      </ThemeProvider>
     </>
   );
 }
@@ -270,7 +322,7 @@ function TabPanel(props: TabPanelProps) {
     >
       {value === index && (
         <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
+          <Typography component={"span"}>{children}</Typography>
         </Box>
       )}
     </div>
