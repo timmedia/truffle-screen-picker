@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./Opener.css";
 
-export function Opener(props: { topText: string; bottomText: string }) {
+export function Opener(props: {
+  topText: string;
+  bottomText: string;
+  onAnimationComplete?: () => void;
+}) {
   const [animationStage, setAnimationStage] = useState(0);
+
+  useEffect(() => {
+    if (animationStage === 3) props.onAnimationComplete?.();
+  }, [animationStage, props.onAnimationComplete]);
 
   return (
     <div
