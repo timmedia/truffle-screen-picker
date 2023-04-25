@@ -1,27 +1,49 @@
 import { ChangeEvent, useRef, useState } from "react";
-import { Button, MenuItem } from "@mui/material";
-import { setBackgroundImageSrc } from "../state";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { setAspectRatio, setBackgroundImageSrc } from "../state";
 import { KeyboardArrowDown, AspectRatio, Upload } from "@mui/icons-material";
 import { StyledMenu } from "./utils";
 
 export default function EditButton() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [textFieldValue, setTextFieldValue] = useState<number>(NaN);
+
   const fileUploadRef = useRef<HTMLInputElement>(null);
   const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+
+  const openMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => {
+
+  const closeMenu = () => {
     setAnchorEl(null);
   };
 
   const uploadBackgroundImage = (e: ChangeEvent<HTMLInputElement>) => {
-    handleClose();
+    closeMenu();
     if (!e.target.files) {
       return;
     }
     const file = e.target.files[0];
     const src = URL.createObjectURL(file);
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      setAspectRatio(img.width / img.height);
+      img.remove();
+    };
     setBackgroundImageSrc(src);
   };
 
@@ -34,7 +56,7 @@ export default function EditButton() {
         aria-expanded={open ? "true" : undefined}
         variant="contained"
         disableElevation
-        onClick={handleClick}
+        onClick={openMenu}
         endIcon={<KeyboardArrowDown />}
         sx={{ borderRadius: 2, bgcolor: "#151515", color: "white" }}
         size="small"
@@ -48,21 +70,64 @@ export default function EditButton() {
         }}
         anchorEl={anchorEl}
         open={open}
-        onClose={handleClose}
+        onClose={closeMenu}
       >
-        {
-          // TODO: implement
-          /* <MenuItem
+        <MenuItem
           onClick={() => {
-            handleClose();
-            saveDiagram();
+            setDialogOpen(true);
           }}
           disableRipple
         >
           <AspectRatio />
           Aspect Ratio
-        </MenuItem> */
-        }
+        </MenuItem>
+        <Dialog open={dialogOpen}>
+          <DialogTitle>Set Aspect Ratio</DialogTitle>
+          <DialogContent>
+            <DialogContentText gutterBottom>
+              Enter in a format of "16 / 9".
+            </DialogContentText>
+            <TextField
+              autoFocus
+              error={Number.isNaN(textFieldValue)}
+              margin="dense"
+              id="aspectRatio"
+              type="email"
+              placeholder="16 / 9"
+              fullWidth
+              variant="standard"
+              onChange={(e) => {
+                const s = e.target.value.replaceAll(" ", "");
+                const [w, h] = s.split("/").map((v) => parseFloat(v));
+                if (w > 0 && h > 0) {
+                  setTextFieldValue(w / h);
+                } else {
+                  setTextFieldValue(NaN);
+                }
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              sx={{ borderRadius: 2, bgcolor: "#151515", color: "white" }}
+              onClick={() => setDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              sx={{ borderRadius: 2, bgcolor: "#151515", color: "white" }}
+              onClick={() => {
+                setDialogOpen(false);
+                closeMenu();
+                setAspectRatio(textFieldValue);
+                setTextFieldValue(NaN);
+              }}
+              disabled={Number.isNaN(textFieldValue)}
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
         <MenuItem
           onClick={() => {
             fileUploadRef?.current?.click();
