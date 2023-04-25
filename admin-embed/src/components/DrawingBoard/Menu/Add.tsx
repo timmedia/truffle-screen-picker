@@ -7,7 +7,7 @@ export default function AddButton() {
     <Button
       variant="contained"
       onClick={() => createRectangle(0.5, 0.5)}
-      startIcon={<Add />}
+      endIcon={<Add />}
       sx={{ borderRadius: 2, bgcolor: "#151515", color: "white" }}
       size="small"
     >

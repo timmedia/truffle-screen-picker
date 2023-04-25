@@ -7,9 +7,7 @@ import {
   DialogContentText,
   DialogTitle,
   MenuItem,
-  Stack,
   TextField,
-  Typography,
 } from "@mui/material";
 import { setAspectRatio, setBackgroundImageSrc } from "../state";
 import { KeyboardArrowDown, AspectRatio, Upload } from "@mui/icons-material";

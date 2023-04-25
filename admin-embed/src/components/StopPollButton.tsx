@@ -51,7 +51,7 @@ export function StopPollButton(props: {
       startIcon={<Stop />}
       variant="contained"
     >
-      Stop Current Poll
+      Stop Poll
     </LoadingButton>
   );
 }

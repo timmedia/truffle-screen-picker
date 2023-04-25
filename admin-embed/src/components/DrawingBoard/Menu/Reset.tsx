@@ -6,7 +6,7 @@ export default function ResetButton() {
   return (
     <Button
       variant="contained"
-      startIcon={<Replay />}
+      endIcon={<Replay />}
       onClick={() => reset()}
       sx={{ borderRadius: 2, bgcolor: "#151515", color: "white" }}
       size="small"

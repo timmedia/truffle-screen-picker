@@ -37,7 +37,7 @@ export default function SaveButton(props: { onComplete?: () => void }) {
     <LoadingButton
       variant="contained"
       size="small"
-      startIcon={<Save />}
+      endIcon={<Save />}
       sx={{ borderRadius: 2, bgcolor: "#151515", color: "white" }}
       loading={loading}
       disabled={disabled}
