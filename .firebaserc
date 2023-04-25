@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "truffle-demos"
+    "development": "truffle-demos",
+    "production": "truffle-production"
   }
 }
