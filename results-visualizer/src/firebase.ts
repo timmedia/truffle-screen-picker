@@ -1,19 +1,34 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getDatabase } from "firebase/database";
-import { getFunctions } from "firebase/functions";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { getDatabase, onValue, ref } from "firebase/database";
+import { SavedPoll } from "./schemas";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB2ewVDYsxK1Qm_eJKVSvfvNQ9UiTOK2AU",
-  authDomain: "truffle-demos.firebaseapp.com",
-  databaseURL: "https://truffle-demos-default-rtdb.firebaseio.com",
-  projectId: "truffle-demos",
-  storageBucket: "truffle-demos.appspot.com",
-  messagingSenderId: "16794194577",
-  appId: "1:16794194577:web:907457a4b4806a742ee530",
-};
+const app = initializeApp({
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+});
 
-const app = initializeApp(firebaseConfig);
-export const firestore = getFirestore(app);
-export const db = getDatabase(app);
-export const functions = getFunctions(app);
+const firestore = getFirestore(app);
+const db = getDatabase(app);
+
+export function pollDataSubscription(
+  pollId: string,
+  callback: (data: [number, number][]) => void
+) {
+  const unsubscribe = onValue(ref(db, `polls/${pollId}`), (snapshot) => {
+    if (!snapshot.exists()) return callback([]);
+    const data = snapshot.val() as { [key: string]: [number, number] };
+    callback(Object.values(data || []));
+  });
+  return { unsubscribe };
+}
+
+export async function getPollLayout(pollId: string, orgId: string) {
+  const pollRef = doc(firestore, `/orgs/${orgId}/polls/${pollId}`);
+  const pollSnapshot = await getDoc(pollRef);
+  // TODO: inform user that poll does not exist
+  if (!pollSnapshot.exists()) return null;
+  const data = pollSnapshot.data() as SavedPoll;
+  return data.layout;
+}
