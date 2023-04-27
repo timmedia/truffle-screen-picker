@@ -16,19 +16,14 @@ import {
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import { z } from "zod";
-import {
-  embed,
-  org as orgClient,
-  TruffleOrg,
-  TruffleUser,
-  user as userClient,
-} from "@trufflehq/sdk";
+import { TruffleOrg, TruffleUser } from "@trufflehq/sdk";
 import { StoredSetupSchema } from "./schemas";
 import "./App.css";
 import { DrawingBoard } from "./components/DrawingBoard/DrawingBoard";
 import CreatePollButton from "./components/CreatePollButton";
 import { StopPollButton } from "./components/StopPollButton";
 import { Toaster } from "react-hot-toast";
+import { embed, truffle } from "./truffle";
 
 const darkTheme = createTheme({
   palette: {
@@ -102,7 +97,7 @@ function App() {
   }, [org]);
 
   useEffect(() => {
-    const subscription = orgClient.observable.subscribe({
+    const subscription = truffle.org.observable.subscribe({
       next: (org) => setOrg(org),
       error: (error) => console.log(error),
       complete: () => void null,
@@ -111,7 +106,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const subscription = userClient.observable.subscribe({
+    const subscription = truffle.user.observable.subscribe({
       next: (user) => setUser(user),
       error: (error) => console.log(error),
       complete: () => void null,

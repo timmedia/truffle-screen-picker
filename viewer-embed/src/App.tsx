@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, useState, MouseEvent } from "react";
-import {
-  embed,
-  user as userClient,
-  org as orgClient,
-  TruffleUser,
-  TruffleOrg,
-  getAccessToken,
-} from "@trufflehq/sdk";
+import { TruffleUser, TruffleOrg, getAccessToken } from "@trufflehq/sdk";
 
 import { Opener } from "./components/Opener";
 import { MouseVisualizer } from "./components/MouseVisualizer";
@@ -15,6 +8,7 @@ import { type StoredSetupSchema } from "./schemas";
 import { onDocSnapshot, submitVote } from "./firebase";
 
 import "./App.css";
+import { embed, truffle } from "./truffle";
 
 function App() {
   // undefined <=> we don't know, waiting for firebase
@@ -72,7 +66,7 @@ function App() {
   }, [org]);
 
   useEffect(() => {
-    const subscription = orgClient.observable.subscribe({
+    const subscription = truffle.org.observable.subscribe({
       next: (org) => (org ? setOrg(org) : null),
       error: (error) => console.log(error),
       complete: () => void null,
@@ -81,7 +75,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const subscription = userClient.observable.subscribe({
+    const subscription = truffle.user.observable.subscribe({
       next: (user) => (user ? setUser(user) : null),
       error: (error) => console.log(error),
       complete: () => void null,

@@ -18,7 +18,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Close, Dashboard, Delete, Edit, NoteAdd } from "@mui/icons-material";
-import { TruffleOrg, getAccessToken, org as orgClient } from "@trufflehq/sdk";
+import { TruffleOrg, getAccessToken } from "@trufflehq/sdk";
 
 import { Canvas } from "./Canvas";
 import { loadLayout, reset } from "./state";
@@ -29,6 +29,7 @@ import ResetButton from "./Menu/Reset";
 import AddButton from "./Menu/Add";
 import EditButton from "./Menu/Edit";
 import NameInput from "./Menu/Name";
+import { truffle } from "../../truffle";
 
 export function DrawingBoard() {
   const [org, setOrg] = useState<TruffleOrg | undefined>(undefined);
@@ -39,7 +40,7 @@ export function DrawingBoard() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const subscription = orgClient.observable.subscribe({
+    const subscription = truffle.org.observable.subscribe({
       next: (org) => setOrg(org),
       error: (error) => console.log(error),
       complete: () => void null,

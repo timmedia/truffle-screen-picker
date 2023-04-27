@@ -15,7 +15,7 @@
     "@mui/icons-material": "^5.11.11",
     "@mui/lab": "^5.0.0-alpha.124",
     "@mui/material": "^5.11.15",
-    "@trufflehq/sdk": "^0.1.2",
+    "@trufflehq/sdk": "^0.2.2",
     "firebase": "^9.18.0",
     "immer": "^9.0.21",
     "konva": "^9.0.0",
