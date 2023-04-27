@@ -259,11 +259,15 @@ export function Rectangle({
         width={shape.width * stage.width()}
         height={shape.height * stage.height()}
         strokeScaleEnabled={false}
+        perfectDrawEnabled={true}
       />
       {isSelected && (
         <Transformer
-          anchorSize={5}
+          anchorSize={10}
+          offsetX={0}
+          offsetY={0}
           rotateEnabled={false}
+          ignoreStroke={true}
           borderDash={[6, 2]}
           ref={transformerRef}
           keepRatio={false}
