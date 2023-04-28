@@ -1,7 +1,7 @@
 import { argMin, distance2, randomSubset } from "../../math";
 import { Point } from "../../schemas";
 
-export function cluster(points: Point[], aspectRatio: number, kRange = [2, 8]) {
+export function cluster(points: Point[], aspectRatio: number, kRange = [2, 9]) {
   const [kmin, kmax] = [
     Math.min(kRange[0], points.length),
     Math.min(kRange[1], points.length),

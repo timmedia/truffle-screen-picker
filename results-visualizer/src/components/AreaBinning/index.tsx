@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { pointsInArea } from "../../math";
 import { Point, PollLayout } from "../../schemas";
 
@@ -10,6 +11,12 @@ export default function AreaBinning({
   layout: PollLayout;
   points: Point[];
 }) {
+  const [opacity, setOpacity] = useState(0);
+
+  useEffect(() => {
+    setOpacity(1);
+  }, []);
+
   const w = window.innerWidth;
   const h = window.innerHeight;
   const pointsPerArea = layout.areas.map((area) => pointsInArea(area, points));
@@ -34,6 +41,8 @@ export default function AreaBinning({
         width: "100%",
         height: "100%",
         zIndex: 5511,
+        opacity,
+        transition: "opacity 250ms ease",
         filter: "drop-shadow(5px 5px 20px rgba(var(--primary-celeste), 1))",
       }}
     >

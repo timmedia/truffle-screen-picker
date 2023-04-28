@@ -4,6 +4,7 @@ import "./App.css";
 import { getPollLayout, pollDataSubscription } from "./firebase";
 import { PollLayout } from "./schemas";
 import AreaBinning from "./components/AreaBinning";
+import Clustering from "./components/Clustering";
 
 function App() {
   const [data, setData] = useState<[number, number][] | undefined>(undefined);
@@ -144,7 +145,8 @@ function App() {
       >
         <h1>No votes yet.</h1>
       </div>
-      {layout && data && <AreaBinning layout={layout} points={data} />}
+      {data && layout && <AreaBinning layout={layout} points={data} />}
+      {data && layout === null && <Clustering points={data} />}
       {/* <canvas
         style={{
           position: "absolute",
