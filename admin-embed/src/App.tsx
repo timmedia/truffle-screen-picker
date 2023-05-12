@@ -224,15 +224,15 @@ function App() {
                   )}
                 </ListItem>
                 <ListItem>
-                  {storedSetup?.pollId && (
+                  {org?.id && storedSetup?.pollId && (
                     <ListItemText
                       primary="Current Poll Results (permalink)"
                       secondary={
                         <a
-                          href={`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}`}
+                          href={`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}&orgId=${org.id}`}
                           target="_blank"
                         >
-                          {`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}`}
+                          {`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}&orgId=${org.id}`}
                         </a>
                       }
                     />
