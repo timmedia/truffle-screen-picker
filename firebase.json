@@ -30,7 +30,7 @@
     "rewrites": [
       {
         "source": "/latestPollResults",
-        "function": "latestPollResults",
+        "function": "screenPoll-latestPollResults",
         "region": "us-central1"
       }
     ]

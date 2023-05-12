@@ -17,14 +17,21 @@ export default functions.https.onRequest(async (request, response) => {
     .join("&");
   queryString = queryString.length > 0 ? `&${queryString}` : "";
   if (typeof pollId === "string") {
-    return response.redirect(`/pollResults?pollId=${pollId}${queryString}`);
+    return response.redirect(
+      `/pollResults?pollId=${pollId}&orgId=${orgId}${queryString}`
+    );
     // TODO: implement automatic redirection to latest poll
-
-    // } else if (previousPollId?.length > 0) {
-    //   return response.redirect(
-    //     `/pollResults?pollId=${previousPollId.at(-1)}${queryString}`
-    //   );
   } else {
-    return response.redirect("/404.html");
+    const snapshot = await firestore
+      .collection(`orgs/${orgId}/polls`)
+      .orderBy("startedAt", "desc")
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) return response.redirect("/404.html");
+
+    return response.redirect(
+      `/pollResults?pollId=${snapshot.docs[0].id}&orgId=${orgId}${queryString}`
+    );
   }
 });
