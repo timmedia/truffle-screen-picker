@@ -4,8 +4,8 @@ export function areaContains(area: Area, [x, y]: Point) {
   return (
     area.x <= x &&
     area.y <= y &&
-    area.x + area.width >= x &&
-    area.y + area.height >= y
+    area.x + area.width > x &&
+    area.y + area.height > y
   );
 }
 
