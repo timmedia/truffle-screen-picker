@@ -67,3 +67,5 @@ node_modules/
 
 
 truffle.secret.*
+
+.DS_STORE
