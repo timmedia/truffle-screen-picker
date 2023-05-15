@@ -19,9 +19,8 @@ export function AreaBinning({
 
   const w = window.innerWidth;
   const h = window.innerHeight;
-  console.log(points);
   const pointsPerArea = layout.areas.map((area) => pointsInArea(area, points));
-  console.log(pointsPerArea);
+
   // disregard points not submitted within a voting area from total percentage
   const nEligibleVotes = pointsPerArea.reduce((tot, curr) => tot + curr);
   const percentages = pointsPerArea.map(
