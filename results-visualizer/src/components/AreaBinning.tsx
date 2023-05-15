@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { pointsInArea } from "../../math";
-import { Point, PollLayout } from "../../schemas";
+import { pointsInArea } from "../math";
+import { Point, PollLayout } from "../schemas";
 
 const STROKE_WIDTH = 0.002;
 
-export default function AreaBinning({
+export function AreaBinning({
   layout,
   points,
 }: {
