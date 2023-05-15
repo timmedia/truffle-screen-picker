@@ -209,6 +209,28 @@ function App() {
                   </Stack>
                 </ListItem>
                 <ListItem>
+                  <Box
+                    sx={{
+                      bgcolor: "lightgrey",
+                      width: "max(min(160px, 50vw), 640px)",
+                      height: "max(min(90px, calc(50vw / 16 * 9)), 360px)",
+                    }}
+                  >
+                    {!storedSetup?.pollId && (
+                      <h1 style={{ textAlign: "center", color: "grey" }}>
+                        Result Preview
+                      </h1>
+                    )}
+                    {storedSetup?.pollId && org?.id && (
+                      <iframe
+                        style={{ width: "100%", height: "100%" }}
+                        src={`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}&orgId=${org.id}`}
+                        frameBorder="0"
+                      ></iframe>
+                    )}
+                  </Box>
+                </ListItem>
+                <ListItem>
                   {org?.id && (
                     <ListItemText
                       primary="Latest Poll Results"
@@ -229,10 +251,10 @@ function App() {
                       primary="Current Poll Results (permalink)"
                       secondary={
                         <a
-                          href={`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}&orgId=${org.id}`}
+                          href={`${hostingBaseURL}/pollResults?orgId=${org.id}&pollId=${storedSetup.pollId}`}
                           target="_blank"
                         >
-                          {`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}&orgId=${org.id}`}
+                          {`${hostingBaseURL}/pollResults?orgId=${org.id}&pollId=${storedSetup.pollId}`}
                         </a>
                       }
                     />
