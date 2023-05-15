@@ -9,7 +9,7 @@
   "functions": [
     {
       "source": "functions",
-      "codebase": "default",
+      "codebase": "screen-poll",
       "ignore": [
         "node_modules",
         ".git",
@@ -17,9 +17,11 @@
         "firebase-debug.*.log"
       ],
       "predeploy": [
+        "npx -y copyfiles .env.* functions/",
         "npm --prefix \"$RESOURCE_DIR\" run lint",
         "npm --prefix \"$RESOURCE_DIR\" run build"
-      ]
+      ],
+      "postdeploy": ["npx -y del-cli functions/.env.*"]
     }
   ],
   "hosting": {
@@ -28,7 +30,7 @@
     "rewrites": [
       {
         "source": "/latestPollResults",
-        "function": "latestPollResults",
+        "function": "screenPoll-latestPollResults",
         "region": "us-central1"
       }
     ]

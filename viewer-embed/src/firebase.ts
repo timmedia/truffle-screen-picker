@@ -1,17 +1,39 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
+import {
+  DocumentData,
+  collection,
+  doc,
+  getFirestore,
+  onSnapshot,
+} from "firebase/firestore";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { SubmitVoteData } from "./schemas";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB2ewVDYsxK1Qm_eJKVSvfvNQ9UiTOK2AU",
-  authDomain: "truffle-demos.firebaseapp.com",
-  databaseURL: "https://truffle-demos-default-rtdb.firebaseio.com",
-  projectId: "truffle-demos",
-  storageBucket: "truffle-demos.appspot.com",
-  messagingSenderId: "16794194577",
-  appId: "1:16794194577:web:907457a4b4806a742ee530",
+const app = initializeApp({
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+});
+const firestore = getFirestore(app);
+const functions = getFunctions(app);
+
+export async function submitVote(data: SubmitVoteData) {
+  const func = httpsCallable<
+    SubmitVoteData,
+    { success: boolean; error?: Error }
+  >(functions, "screenPoll-submitVote");
+  const result = await func(data);
+  return result.data;
+}
+
+// listen to changes in document
+export const onDocSnapshot = (
+  collectionPath: string,
+  documentName: string,
+  callback: (data: DocumentData) => void
+) => {
+  const ref = doc(collection(firestore, collectionPath), documentName);
+  return onSnapshot(ref, (doc) => {
+    if (doc.exists()) callback(doc.data());
+  });
 };
-
-const app = initializeApp(firebaseConfig);
-export const firestore = getFirestore(app);
-export const functions = getFunctions(app);

@@ -11,4 +11,5 @@ export default defineConfig({
   build: {
     outDir: "../www/pollResults",
   },
+  envDir: "../",
 });

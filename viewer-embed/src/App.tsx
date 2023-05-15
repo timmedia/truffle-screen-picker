@@ -1,42 +1,30 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  embed,
-  app,
-  getSrcByImageObj,
-  TruffleOrgClient,
-  user as userClient,
-  org as orgClient,
-  TruffleUser,
-  TruffleOrg,
-  getAccessToken,
-} from "@trufflehq/sdk";
+import { useCallback, useEffect, useRef, useState, MouseEvent } from "react";
+import { TruffleUser, TruffleOrg, getAccessToken } from "@trufflehq/sdk";
 
-import { observer } from "@legendapp/state/react";
-
-import "./App.css";
-import { fromSpecObservable } from "./from-spec-observable";
-import { collection, doc, onSnapshot } from "firebase/firestore";
-import { docData } from "rxfire/firestore";
-import { distinctUntilChanged, filter, map } from "rxjs/operators";
-import { firestore, functions } from "./firebase";
 import { Opener } from "./components/Opener";
 import { MouseVisualizer } from "./components/MouseVisualizer";
-import { connectFunctionsEmulator, httpsCallable } from "firebase/functions";
-import { StoredSetup, SubmitVoteData } from "../../models";
 import { OverlayAnimation } from "./components/OverlayAnimation";
+import { type StoredSetupSchema } from "./schemas";
+import { onDocSnapshot, submitVote } from "./firebase";
 
-// const user = fromSpecObservable(userClient.observable);
-// const orgUser = fromSpecObservable(userClient.orgUser.observable);
-// const org = fromSpecObservable(orgClient.observable);
+import "./App.css";
+import { embed, truffle } from "./truffle";
 
 function App() {
   // undefined <=> we don't know, waiting for firebase
   // string <=> we are voting
   // null <=> we are not voting
-  const [pollId, setPollId] = useState<string | undefined | null>(undefined);
-  const [submitted, setSubmitted] = useState(false);
+  // const [pollId, setPollId] = useState<string | undefined | null>(undefined);
+  const [setup, setSetup] = useState<StoredSetupSchema | undefined>(undefined);
   const [user, setUser] = useState<TruffleUser | undefined>(undefined);
   const [org, setOrg] = useState<TruffleOrg | undefined>(undefined);
+
+  // 0 <=> wating for a new poll to start
+  // 1 <=> opening text showing
+  // 2 <=> user can submit entry
+  // 3 <=> closing text
+  // 4 <=> closing text done, hide embed now
+  const [embedState, setEmbedState] = useState<number>(0);
 
   const main = useRef<HTMLDivElement>(null);
 
@@ -54,23 +42,31 @@ function App() {
       boxShadow: "0px 0px 200px rgb(255, 147, 192)",
       transition: "opacity 300ms linear",
       opacity: 0,
+      "user-select": "none",
+      "pointer-events": "none",
     });
   }, []);
 
   useEffect(() => {
+    embed.setStyles({
+      "pointer-events": embedState === 2 ? "auto" : "none",
+    });
+    if (embedState === 4) {
+      setTimeout(() => embed.setStyles({ opacity: 0 }), 1000);
+      setTimeout(() => embed.hide(), 2000);
+    }
+  }, [embedState]);
+
+  useEffect(() => {
     if (org === undefined) return;
-    const docRef = doc(collection(firestore, "/admin"), org.id);
-    const subscription = docData(docRef)
-      .pipe(
-        map((data) => (data as StoredSetup).currentPollId),
-        distinctUntilChanged()
-      )
-      .subscribe((newPollId) => setPollId(newPollId));
-    return () => subscription.unsubscribe();
+    const unsubscribe = onDocSnapshot("/orgs", org.id, (data) =>
+      setSetup(data as StoredSetupSchema)
+    );
+    return () => unsubscribe();
   }, [org]);
 
   useEffect(() => {
-    const subscription = orgClient.observable.subscribe({
+    const subscription = truffle.org.observable.subscribe({
       next: (org) => (org ? setOrg(org) : null),
       error: (error) => console.log(error),
       complete: () => void null,
@@ -79,7 +75,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const subscription = userClient.observable.subscribe({
+    const subscription = truffle.user.observable.subscribe({
       next: (user) => (user ? setUser(user) : null),
       error: (error) => console.log(error),
       complete: () => void null,
@@ -88,60 +84,69 @@ function App() {
   }, []);
 
   useEffect(() => {
-    app.org.observable.subscribe({
-      next: console.log,
-      error: console.log,
-    });
-    app.user.observable.subscribe({
-      next: console.log,
-      error: console.log,
-    });
-  }, []);
-
-  useEffect(() => {
-    if (typeof pollId === "string") {
-      setSubmitted(false);
+    if (typeof setup?.pollId === "string") {
+      setEmbedState(1);
       embed.show();
       setTimeout(() => embed.setStyles({ opacity: 1 }), 300);
-    } else if (pollId === null) {
+    } else if (setup?.pollId === null) {
+      setEmbedState(0);
       embed.setStyles({ opacity: 0 });
       setTimeout(() => embed.hide(), 600);
     }
-  }, [pollId]);
+  }, [setup]);
 
-  const handleClick = async (event: any) => {
-    setSubmitted(true);
-    setTimeout(() => embed.setStyles({ opacity: 0 }), 2500);
-    setTimeout(() => embed.hide(), 3500);
-    if (user === undefined || org === undefined) return;
-    if (typeof pollId !== "string") return;
-    const accessToken = await getAccessToken();
-    // connectFunctionsEmulator(functions, "localhost", 5000);
-    const submitVote = httpsCallable<SubmitVoteData, { success: boolean }>(
-      functions,
-      "submitVote"
-    );
-    const result = await submitVote({
-      accessToken,
-      relX: event.clientX / main.current!.clientWidth,
-      relY: event.clientY / main.current!.clientHeight,
-      userId: user.id,
-      pollId: pollId,
-      orgId: org.id,
-    });
-    console.log(result.data);
-  };
+  const handleClick = useCallback(
+    async (event: MouseEvent<HTMLElement | SVGElement>) => {
+      setEmbedState(3);
+      if (user === undefined || org === undefined) return;
+      if (typeof setup?.pollId !== "string") return;
+      const x = event.clientX / main.current!.clientWidth;
+      const y = event.clientY / main.current!.clientHeight;
+      console.log(`Submitting (${x}, ${y})`);
+      const result = await submitVote({
+        accessToken: await getAccessToken(),
+        pollId: setup.pollId,
+        x,
+        y,
+      });
+      console.log(result);
+    },
+    [setup]
+  );
 
   return (
     <div className="app">
-      <main onClick={handleClick} ref={main}>
-        {!submitted && <MouseVisualizer />}
-        {!submitted && <OverlayAnimation />}
-        {submitted && <Opener topText="Thanks for" bottomText="voting!" />}
-        {!submitted && <Opener topText="Time to" bottomText="Vote!" />}
+      <main ref={main}>
+        {embedState === 2 && (
+          <MouseVisualizer
+            layout={setup?.layout ?? null}
+            onClick={handleClick}
+          />
+        )}
+        {embedState === 2 && (
+          <OverlayAnimation layout={setup?.layout ?? null} />
+        )}
+        {(embedState === 3 || embedState == 4) && (
+          <Opener
+            topText="Thanks for"
+            bottomText="voting!"
+            onAnimationComplete={() => {
+              setEmbedState((state) => (state === 3 ? 4 : state));
+            }}
+          />
+        )}
+        {(embedState === 1 || embedState === 2) && (
+          <Opener
+            topText="Time to"
+            bottomText="Vote!"
+            onAnimationComplete={() =>
+              setEmbedState((state) => (state === 1 ? 2 : state))
+            }
+          />
+        )}
       </main>
     </div>
   );
 }
 
-export default observer(App);
+export default App;

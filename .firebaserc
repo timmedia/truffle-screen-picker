@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "truffle-demos"
+    "development": "truffle-demos",
+    "staging": "truffle-production",
+    "production": "tim-screen-picker"
   }
 }

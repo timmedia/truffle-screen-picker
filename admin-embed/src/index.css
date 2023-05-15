@@ -5,16 +5,25 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: transparent;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  --primary-pink: 255, 147, 192;
+  --primary-celeste: 146, 227, 227;
 }
 
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: rgb(62, 166, 255);
 }

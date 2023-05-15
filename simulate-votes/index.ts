@@ -101,9 +101,9 @@ if (args?.pollId === undefined) throw Error("Must supply `pollId`.");
 args.duration = args?.duration === undefined ? 0 : parseInt(args.duration);
 
 args.distribution =
-  args?.distribution.toLowerCase() === "random"
+  args?.distribution?.toLowerCase() === "random"
     ? "random"
-    : args?.distribution.toLowerCase() === "demo"
+    : args?.distribution?.toLowerCase() === "demo"
     ? "demo"
     : "clustered";
 

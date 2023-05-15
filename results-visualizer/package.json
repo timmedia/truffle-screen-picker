@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "colormap": "^2.3.2",
     "firebase": "^9.19.0",
     "heatmap.js": "^2.0.5",
     "kmeans-ts": "^1.0.4",
@@ -16,6 +17,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/colormap": "^2.3.1",
     "@types/heatmap.js": "^2.0.37",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",

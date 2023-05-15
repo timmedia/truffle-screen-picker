@@ -1,19 +1,16 @@
 @font-face {
   font-family: "Thunder";
-  src: url("https://cdn.bio/assets/fonts/thunder/Thunder-BoldLC.eot?#iefix")
-      format("embedded-opentype"),
-    url("https://cdn.bio/assets/fonts/thunder/Thunder-BoldLC.woff")
-      format("woff"),
-    url("https://cdn.bio/assets/fonts/thunder/Thunder-BoldLC.woff2")
-      format("woff2"),
-    url("https://cdn.bio/assets/fonts/thunder/Thunder-BoldLC.ttf")
-      format("truetype");
+  src: url(./assets/Thunder-BoldLC.ttf) format("truetype"),
+    url(./assets/Thunder-BoldLC.woff2) format("woff");
   font-style: normal;
   font-weight: bold;
   text-rendering: optimizeLegibility;
 }
 
 :root {
-  color: back;
+  color: black;
   background-color: transparent;
+
+  --primary-pink: 255, 147, 192;
+  --primary-celeste: 146, 227, 227;
 }
