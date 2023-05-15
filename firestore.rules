@@ -6,4 +6,4 @@ service cloud.firestore {
       allow read: if true;
     }
   }
-}
+}  
