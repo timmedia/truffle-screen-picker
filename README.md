@@ -1,10 +1,10 @@
 # Screen Picker Package
 
-Truffle package enabling polling by letting viewers select a point on screen. Currently, there are two separate embeds: The viewer embed facilitates the actual poll (overlay on video) and the admin embed controls creating/managing the polls. The overlay runs on port `5173` by default and the admin embed on `5174`. Below are the corresponding dev embed configs. An authentication token is needed in both cases (to manage permissions and ensure each viewer can only vote once).
+Truffle poll package where viewers select a point on screen. Currently, there are two separate embeds: The viewer embed facilitates the actual poll (overlay on YouTube stream) and the admin embed controls creating/managing the polls. The overlay runs on port `5173` by default and the admin embed on `5174`. Below are the corresponding dev embed configs. An authentication token is needed in both cases (to manage permissions and ensure each viewer can only vote once).
 
-### Why Firebase instead of Supabase?
+## Usage
 
-A rewrite to use Supabase has been started in [dev/supabase](https://github.com/timmedia/truffle-screen-picker/tree/dev/supabase), however, the Supabase free tier only allows 200 concurrent realtime connections.
+A poll is identified by a unique poll id and is owned by an org (identified by the org id). To be able to create a poll for an org, the logged in Truffle user must have the `Admin` role. When starting a poll, the evaluation mode must be specified. By default, the submitted votes are evaluated using a k-means clustering algorithm. However, if there are pre-defined, discrete areas which viewers should be able to vote on, e.g. a grid of buttons, please select a binning mode. The layout of these areas is defined in the "Poll Layouts" tab.
 
 ## [Viewer embed](viewer-embed)
 
