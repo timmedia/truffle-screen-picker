@@ -33,7 +33,7 @@ export function MouseVisualizer(props: {
     context.scale(2, 2);
     let fadeOut: () => any = () =>
       requestAnimationFrame(() => {
-        context.fillStyle = "rgb(128, 128, 128, 0.05)";
+        context.fillStyle = "rgb(128, 128, 128, 0.1)";
         context.fillRect(0, 0, context.canvas.width, context.canvas.height);
         fadeOut();
       });
