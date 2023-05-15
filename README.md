@@ -6,6 +6,13 @@ Truffle poll package where viewers select a point on screen. Currently, there ar
 
 A poll is identified by a unique poll id and is owned by an org (identified by the org id). To be able to create a poll for an org, the logged in Truffle user must have the `Admin` role. When starting a poll, the evaluation mode must be specified. By default, the submitted votes are evaluated using a k-means clustering algorithm. However, if there are pre-defined, discrete areas which viewers should be able to vote on, e.g. a grid of buttons, please select a binning mode. The layout of these areas is defined in the "Poll Layouts" tab.
 
+## Build
+
+Remember to specify the environment when building and deploying the Vite projects (`development`, `staging`, `production`).
+
+    npm run build -- --mode=development
+    firebase use development
+
 ## [Viewer embed](viewer-embed)
 
 ```json
