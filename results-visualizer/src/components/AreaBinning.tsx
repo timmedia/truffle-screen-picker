@@ -45,80 +45,82 @@ export function AreaBinning({
         opacity,
         transition: "opacity 250ms ease",
         filter: "drop-shadow(5px 5px 20px rgba(var(--primary-celeste), 1))",
+        fill: "transparent",
       }}
     >
       <rect width={w} height={h} x={0} y={0} fill="transparent" />
-      {layout.areas.map(({ x, y, width, height }, index) => (
-        <g key={`group-${index}`}>
-          <line
-            key={`top-${index}`}
-            x1={(x - STROKE_WIDTH / 2) * w}
-            y1={y * h}
-            x2={(x + width + STROKE_WIDTH / 2) * w}
-            y2={y * h}
-            stroke={"white"}
-            strokeWidth={STROKE_WIDTH * w}
-          />
-          <line
-            key={`bottom-${index}`}
-            x1={(x - STROKE_WIDTH / 2) * w}
-            y1={(y + height) * h}
-            x2={(x + width + STROKE_WIDTH / 2) * w}
-            y2={(y + height) * h}
-            stroke={"white"}
-            strokeWidth={STROKE_WIDTH * w}
-            strokeLinejoin="round"
-          />
-          <line
-            key={`left-${index}`}
-            x1={x * w}
-            y1={y * h}
-            x2={x * w}
-            y2={(y + height) * h}
-            stroke={"white"}
-            strokeWidth={STROKE_WIDTH * w}
-            strokeLinejoin="round"
-          />
-          <line
-            key={`right-${index}`}
-            x1={(x + width) * w}
-            y1={(y - STROKE_WIDTH / 2) * h}
-            x2={(x + width) * w}
-            y2={(y + height) * h}
-            stroke={"white"}
-            strokeWidth={STROKE_WIDTH * w}
-            strokeLinejoin="round"
-          />
-          <rect
-            key={`area-${index}`}
-            width={width * w}
-            height={height * h}
-            x={x * w}
-            y={y * h}
-            fill={`rgba(var(--primary-celeste), ${
-              pointsPerArea[index] / nEligibleVotes / 1.5
-            })`}
-            style={{
-              transition: "fill 150ms ease",
-            }}
-          />
-          <text
-            textAnchor="middle"
-            alignmentBaseline="central"
-            x={(x + width / 2) * w}
-            y={(y + height / 2) * h}
-            style={{
-              fontFamily: "Thunder",
-              fontSize: `clamp(50px, ${(width * w) / 4}px, 200px)`,
-              transform: "translateY(clamp(20px, 1vh, 100px))",
-              fill: "black",
-              userSelect: "none",
-            }}
-          >
-            {percentages[index]}%
-          </text>
-        </g>
-      ))}
+      {totalPercentages > 0 &&
+        layout.areas.map(({ x, y, width, height }, index) => (
+          <g key={`group-${index}`}>
+            <line
+              key={`top-${index}`}
+              x1={(x - STROKE_WIDTH / 2) * w}
+              y1={y * h}
+              x2={(x + width + STROKE_WIDTH / 2) * w}
+              y2={y * h}
+              stroke={"white"}
+              strokeWidth={STROKE_WIDTH * w}
+            />
+            <line
+              key={`bottom-${index}`}
+              x1={(x - STROKE_WIDTH / 2) * w}
+              y1={(y + height) * h}
+              x2={(x + width + STROKE_WIDTH / 2) * w}
+              y2={(y + height) * h}
+              stroke={"white"}
+              strokeWidth={STROKE_WIDTH * w}
+              strokeLinejoin="round"
+            />
+            <line
+              key={`left-${index}`}
+              x1={x * w}
+              y1={y * h}
+              x2={x * w}
+              y2={(y + height) * h}
+              stroke={"white"}
+              strokeWidth={STROKE_WIDTH * w}
+              strokeLinejoin="round"
+            />
+            <line
+              key={`right-${index}`}
+              x1={(x + width) * w}
+              y1={(y - STROKE_WIDTH / 2) * h}
+              x2={(x + width) * w}
+              y2={(y + height) * h}
+              stroke={"white"}
+              strokeWidth={STROKE_WIDTH * w}
+              strokeLinejoin="round"
+            />
+            <rect
+              key={`area-${index}`}
+              width={width * w}
+              height={height * h}
+              x={x * w}
+              y={y * h}
+              fill={`rgba(var(--primary-celeste), ${
+                pointsPerArea[index] / nEligibleVotes
+              })`}
+              style={{
+                transition: "fill 150ms ease",
+              }}
+            />
+            <text
+              textAnchor="middle"
+              alignmentBaseline="central"
+              x={(x + width / 2) * w}
+              y={(y + height / 2) * h}
+              style={{
+                fontFamily: "Thunder",
+                fontSize: `clamp(50px, ${(width * w) / 4}px, 200px)`,
+                transform: "translateY(clamp(10px, 2vh, 100px))",
+                fill: "black",
+                userSelect: "none",
+              }}
+            >
+              {percentages[index]}%
+            </text>
+          </g>
+        ))}
     </svg>
   );
 }
