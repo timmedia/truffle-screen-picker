@@ -10,7 +10,8 @@ function drawPoints(points: Point[], canvas: HTMLCanvasElement) {
   const aspectRatio = window.innerHeight / window.innerWidth;
   const context = canvas!.getContext("2d")!;
   context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-  const radius = context.canvas.width / Math.min(points.length, 100);
+  const radius =
+    context.canvas.width / Math.max(Math.min(points.length, 100), 50);
   const clusters = cluster(points, aspectRatio);
   const nshades = Math.max(72, clusters.length);
   const colors = colormap({
