@@ -1,23 +1,22 @@
 # Screen Picker Package
 
-Truffle poll package where viewers select a point on screen. Currently, there are two separate embeds: The viewer embed facilitates the actual poll (overlay on YouTube stream) and the admin embed controls creating/managing the polls. The overlay runs on port `5173` by default and the admin embed on `5174`. Below are the corresponding dev embed configs. An authentication token is needed in both cases (to manage permissions and ensure each viewer can only vote once).
+Truffle poll package where viewers vote by clicking anywhere on the screen. Currently, there are two separate embeds: The viewer embed facilitates the actual poll (overlay on YouTube stream) and the admin embed controls creating/managing the polls. By default, the overlay runs on port `5173` and the admin embed on `5174`. Below are the corresponding dev embed configs. An authentication token is needed in both cases.
 
 ## Usage
 
-A poll is identified by a unique poll id and is owned by an org (identified by the org id). To be able to create a poll for an org, the logged in Truffle user must have the `Admin` role. When starting a poll, the evaluation mode must be specified. By default, the submitted votes are evaluated using a k-means clustering algorithm. However, if there are pre-defined, discrete areas which viewers should be able to vote on, e.g. a grid of buttons, please select a binning mode. The layout of these areas is defined in the "Poll Layouts" tab.
+A poll is identified by a unique poll id and is owned by an org (identified by the org id). To be able to create a poll for an org, the logged in Truffle user must have the `Admin` role. When starting a poll, the evaluation mode must be specified. By default, the submitted votes are evaluated using a k-means clustering algorithm. However, if there are pre-defined, discrete areas which viewers should be able to vote on, e.g. a grid of buttons, please select a binning mode. The layout of these areas is created through the "Poll Layouts" tab.
 
 ## Build
 
-Remember to specify the environment when building and deploying the Vite projects (`development`, `staging`, `production`).
+Remember to specify the environment when deploying (`development`, `staging`, `production`). The hosting predeploy scripts will build the vite projects with the correct environment variables.
 
-    npm run build -- --mode=development
-    firebase use development
+    firebase deploy --only hosting --project production -m "Update Result Visualizer"
 
 ## [Viewer embed](viewer-embed)
 
 ```json
 {
-  "url": "http://localhost:5173/",
+  "url": "http://localhost:5173/viewer",
   "authToken": "AUTH_TOKEN",
   "parentQuerySelector": "#player",
   "contentPageType": "youtube",
@@ -38,7 +37,7 @@ Ideally, this would not be an embed, but perhaps accessible via the creator webs
 
 ```json
 {
-  "url": "http://localhost:5174/",
+  "url": "http://localhost:5174/admin",
   "authToken": "AUTH_TOKEN",
   "parentQuerySelector": "#above-the-fold",
   "contentPageType": "youtube",
@@ -51,15 +50,15 @@ Ideally, this would not be an embed, but perhaps accessible via the creator webs
 
 ## [Poll results](results-visualizer)
 
-Result are shown on a separate page, which connects to the Realtime Database. Note that at least 10 votes are needed in order to see something, as otherwise the k-means algorithm used produces trash. You can either access the visualization via a permalink to a specific poll
+Result are shown on a separate page, which connects to the Realtime Database. You can either access the visualization via a permalink to a specific poll
 
-    https://truffle-demos.firebaseapp.com/pollResults?pollId=YOUR_POLL_ID
+    https://SITE_ID.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID&pollId=YOUR_POLL_ID
 
 or open
 
-    https://truffle-demos.firebaseapp.com/latestPollResults?orgId=YOUR_ORG_ID
+    https://SITE_ID.firebaseapp.com/latest?orgId=YOUR_ORG_ID
 
-which redirects to the latest poll of the specified org.
+which redirects to the most recent poll of the specified org. The `SITE_ID` depends on the environment of interest (e.g. `screen-picker-results` for `production`, c.f. [`.firebaserc`](.firebaserc)).
 
 # Backend
 
