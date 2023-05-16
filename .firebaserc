@@ -28,7 +28,7 @@
     "tim-screen-picker": {
       "hosting": {
         "screenPollResults": [
-          "screen-picker-embed"
+          "screen-picker-results"
         ],
         "screenPollEmbed": [
           "screen-picker-embed"
