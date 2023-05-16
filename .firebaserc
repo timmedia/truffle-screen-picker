@@ -3,5 +3,38 @@
     "development": "truffle-demos",
     "staging": "truffle-production",
     "production": "tim-screen-picker"
-  }
+  },
+  "targets": {
+    "truffle-demos": {
+      "hosting": {
+        "screenPollResults": [
+          "screen-picker-development-results"
+        ],
+        "screenPollEmbed": [
+          "screen-picker-development-embed"
+        ]
+      }
+    },
+    "truffle-production": {
+      "hosting": {
+        "screenPollResults": [
+          "screen-picker-staging-results"
+        ],
+        "screenPollEmbed": [
+          "screen-picker-staging-embed"
+        ]
+      }
+    },
+    "tim-screen-picker": {
+      "hosting": {
+        "screenPollResults": [
+          "screen-picker-embed"
+        ],
+        "screenPollEmbed": [
+          "screen-picker-embed"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

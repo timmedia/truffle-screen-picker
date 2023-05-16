@@ -24,15 +24,25 @@
       "postdeploy": ["npx -y del-cli functions/.env.*"]
     }
   ],
-  "hosting": {
-    "public": "www",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      {
-        "source": "/latestPollResults",
-        "function": "screenPoll-latestPollResults",
-        "region": "us-central1"
-      }
-    ]
-  }
+  "hosting": [
+    {
+      "target": "screenPollResults",
+      "public": "hosting/results",
+      "predeploy": ["node scripts/results-predeploy.js \"$GCLOUD_PROJECT\""],
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "/latest",
+          "function": "screenPoll-latestPollResults",
+          "region": "us-central1"
+        }
+      ]
+    },
+    {
+      "target": "screenPollEmbed",
+      "public": "hosting/embed",
+      "predeploy": ["node scripts/embed-predeploy.js \"$GCLOUD_PROJECT\""],
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+    }
+  ]
 }

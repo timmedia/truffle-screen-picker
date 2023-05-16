@@ -224,7 +224,9 @@ function App() {
                     {storedSetup?.pollId && org?.id && (
                       <iframe
                         style={{ width: "100%", height: "100%" }}
-                        src={`${hostingBaseURL}/pollResults?pollId=${storedSetup.pollId}&orgId=${org.id}`}
+                        src={`${
+                          import.meta.env.VITE_FIREBASE_RESULTS_URL
+                        }/latest?orgId=${org.id}`}
                         frameBorder="0"
                       ></iframe>
                     )}
@@ -236,10 +238,14 @@ function App() {
                       primary="Latest Poll Results"
                       secondary={
                         <a
-                          href={`${hostingBaseURL}/latestPollResults?orgId=${org.id}`}
+                          href={`${
+                            import.meta.env.VITE_FIREBASE_RESULTS_URL
+                          }/latest?orgId=${org.id}`}
                           target="_blank"
                         >
-                          {`${hostingBaseURL}/latestPollResults?orgId=${org.id}`}
+                          {`${
+                            import.meta.env.VITE_FIREBASE_RESULTS_URL
+                          }/latest?orgId=${org.id}`}
                         </a>
                       }
                     />
@@ -251,10 +257,18 @@ function App() {
                       primary="Current Poll Results (permalink)"
                       secondary={
                         <a
-                          href={`${hostingBaseURL}/pollResults?orgId=${org.id}&pollId=${storedSetup.pollId}`}
+                          href={`${
+                            import.meta.env.VITE_FIREBASE_RESULTS_URL
+                          }/visualizer?orgId=${org.id}&pollId=${
+                            storedSetup.pollId
+                          }`}
                           target="_blank"
                         >
-                          {`${hostingBaseURL}/pollResults?orgId=${org.id}&pollId=${storedSetup.pollId}`}
+                          {`${
+                            import.meta.env.VITE_FIREBASE_RESULTS_URL
+                          }/visualizer?orgId=${org.id}&pollId=${
+                            storedSetup.pollId
+                          }`}
                         </a>
                       }
                     />

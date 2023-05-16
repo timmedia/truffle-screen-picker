@@ -18,9 +18,8 @@ export default functions.https.onRequest(async (request, response) => {
   queryString = queryString.length > 0 ? `&${queryString}` : "";
   if (typeof pollId === "string") {
     return response.redirect(
-      `/pollResults?pollId=${pollId}&orgId=${orgId}${queryString}`
+      `/visualizer?pollId=${pollId}&orgId=${orgId}${queryString}`
     );
-    // TODO: implement automatic redirection to latest poll
   } else {
     const snapshot = await firestore
       .collection(`orgs/${orgId}/polls`)
@@ -31,7 +30,7 @@ export default functions.https.onRequest(async (request, response) => {
     if (snapshot.empty) return response.redirect("/404.html");
 
     return response.redirect(
-      `/pollResults?pollId=${snapshot.docs[0].id}&orgId=${orgId}${queryString}`
+      `/visualizer?pollId=${snapshot.docs[0].id}&orgId=${orgId}${queryString}`
     );
   }
 });

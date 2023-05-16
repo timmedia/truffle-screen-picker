@@ -4,6 +4,7 @@ import packageJson from "./package.json";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/admin",
   plugins: [react()],
   server: {
     port: 5174,
@@ -13,5 +14,9 @@ export default defineConfig({
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(
       process.env.npm_package_version
     ),
+  },
+  build: {
+    outDir: "../hosting/embed/admin",
+    emptyOutDir: true,
   },
 });

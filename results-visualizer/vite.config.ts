@@ -3,13 +3,13 @@ import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "pollResults",
+  base: "/visualizer",
   plugins: [react()],
   server: {
     port: 5175,
   },
   build: {
-    outDir: "../www/pollResults",
+    outDir: "../hosting/results/visualizer",
   },
   envDir: "../",
 });
