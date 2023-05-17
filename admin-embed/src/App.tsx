@@ -212,22 +212,46 @@ function App() {
                   <Box
                     sx={{
                       bgcolor: "lightgrey",
-                      width: "max(min(160px, 50vw), 640px)",
-                      height: "max(min(90px, calc(50vw / 16 * 9)), 360px)",
+                      width: "100vw",
+                      height: "calc(100vw / 16 * 9)",
+                      backgroundImage: `linear-gradient(45deg, #ccc 25%, transparent 25%), 
+                                        linear-gradient(135deg, #ccc 25%, transparent 25%),
+                                        linear-gradient(45deg, transparent 75%, #ccc 75%),
+                                        linear-gradient(135deg, transparent 75%, #ccc 75%)`,
+                      backgroundSize: "20px 20px",
+                      backgroundPosition: "0 0, 10px 0, 10px -10px, 0px 10px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
                   >
                     {!storedSetup?.pollId && (
-                      <h1 style={{ textAlign: "center", color: "grey" }}>
+                      <h1
+                        style={{
+                          textAlign: "center",
+                          color: "grey",
+                          userSelect: "none",
+                          fontSize: "10vw",
+                        }}
+                      >
                         Result Preview
                       </h1>
                     )}
                     {storedSetup?.pollId && org?.id && (
                       <iframe
-                        style={{ width: "100%", height: "100%" }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          colorScheme: "normal",
+                        }}
                         src={`${
                           import.meta.env.VITE_FIREBASE_RESULTS_URL
-                        }/latest?orgId=${org.id}`}
+                        }/visualizer?orgId=${org.id}&pollId=${
+                          storedSetup.pollId
+                        }`}
                         frameBorder="0"
+                        referrerPolicy="no-referrer"
+                        allowTransparency={true}
                       ></iframe>
                     )}
                   </Box>
@@ -235,7 +259,7 @@ function App() {
                 <ListItem>
                   {org?.id && (
                     <ListItemText
-                      primary="Latest Poll Results"
+                      primary="Most Recent Poll Results"
                       secondary={
                         <a
                           href={`${
