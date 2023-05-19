@@ -30,14 +30,14 @@ export const hostingBaseURL = `https://${
 export async function createPoll(data: CreatePollData) {
   const func = httpsCallable<
     CreatePollData,
-    { success: boolean; pollId?: string; error?: Error }
+    { success: boolean; pollId?: string; error?: any }
   >(functions, "screenPoll-createPoll");
   const result = await func(data);
   return result.data;
 }
 
 export async function stopCurrentPoll(accessToken: string) {
-  const func = httpsCallable<StopPollData, { success: boolean; error?: Error }>(
+  const func = httpsCallable<StopPollData, { success: boolean; error?: any }>(
     functions,
     "screenPoll-stopCurrentPoll"
   );
@@ -48,7 +48,7 @@ export async function stopCurrentPoll(accessToken: string) {
 export function savePollLayout(data: SavePollLayoutData) {
   const func = httpsCallable<
     SavePollLayoutData,
-    { success: boolean; error?: Error }
+    { success: boolean; error?: any }
   >(functions, "screenPoll-savePollLayout");
   return func(data);
 }
@@ -56,7 +56,7 @@ export function savePollLayout(data: SavePollLayoutData) {
 export async function deletePollLayout(data: DeletePollLayoutData) {
   const func = httpsCallable<
     DeletePollLayoutData,
-    { success: boolean; error?: Error }
+    { success: boolean; error?: any }
   >(functions, "screenPoll-deletePollLayout");
   const result = await func(data);
   return result.data;

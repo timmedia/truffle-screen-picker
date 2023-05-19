@@ -19,7 +19,7 @@ export function StopPollButton(props: {
       const accessToken = await getAccessToken();
       const result = await stopCurrentPoll(accessToken);
       console.log(result);
-      if (!result.success) throw result?.error;
+      if (!result.success) throw new Error(JSON.stringify(result?.error));
       toast.custom(<Alert severity="success">Poll stopped.</Alert>, {
         duration: 2500,
       });
@@ -28,7 +28,7 @@ export function StopPollButton(props: {
       toast.custom(
         <Alert severity="error">
           Could not stop poll.{" "}
-          <code>{(error as Error).message || `${error}`}</code>.
+          <code>{(error as Error).message || `${JSON.stringify(error)}`}</code>.
         </Alert>,
         { duration: 2500 }
       );

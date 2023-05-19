@@ -71,7 +71,7 @@ export function DrawingBoard() {
         accessToken: await getAccessToken(),
         layoutId,
       });
-      if (!result.success) throw result?.error;
+      if (!result.success) throw new Error(JSON.stringify(result?.error));
       toast.custom(
         <Alert severity="success">Layout deleted successfully.</Alert>,
         { duration: 2500 }
@@ -80,7 +80,7 @@ export function DrawingBoard() {
       console.log(error);
       toast.custom(
         <Alert severity="error">
-          Error: {(error as Error)?.message || `${error}`}
+          Error: {(error as Error)?.message || `${JSON.stringify(error)}`}
         </Alert>,
         {
           duration: 5000,

@@ -46,7 +46,7 @@ export default function CreatePollButton(props: {
         accessToken,
         layout: selectedPollLayout,
       });
-      if (!result.success) throw result.error;
+      if (!result.success) throw new Error(JSON.stringify(result?.error));
       toast.custom(
         <Alert severity="success">
           Poll started with id <code>{result.pollId}</code>.
@@ -59,7 +59,7 @@ export default function CreatePollButton(props: {
       toast.custom(
         <Alert severity="error">
           Could not start poll.{" "}
-          <code>{(error as Error).message || `${error}`}</code>.
+          <code>{(error as Error).message || `${JSON.stringify(error)}`}</code>.
         </Alert>,
         { duration: 2500 }
       );

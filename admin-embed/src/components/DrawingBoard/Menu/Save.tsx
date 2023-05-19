@@ -15,7 +15,7 @@ export default function SaveButton(props: { onComplete?: () => void }) {
     try {
       setLoading(true);
       const result = await saveDiagram();
-      if (!result.success) throw result?.error;
+      if (!result.success) throw new Error(JSON.stringify(result?.error));
       toast.custom(
         <Alert severity="success">Layout saved successfully.</Alert>,
         { duration: 2500 }
@@ -25,7 +25,7 @@ export default function SaveButton(props: { onComplete?: () => void }) {
       console.log(error);
       toast.custom(
         <Alert severity="error">
-          Error: {(error as Error)?.message || `${error}`}
+          Error: {(error as Error)?.message || `${JSON.stringify(error)}`}
         </Alert>,
         {
           duration: 2500,
