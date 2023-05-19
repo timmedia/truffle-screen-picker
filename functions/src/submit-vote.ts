@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions";
 import { z } from "zod";
-import { verifyAccessToken } from "./utils";
+import { stringifyError, verifyAccessToken } from "./utils";
 import { db } from "./admin";
 
 const SubmitVoteData = z.object({
@@ -18,6 +18,6 @@ export default functions.https.onCall(async (data) => {
     return { success: true };
   } catch (error) {
     functions.logger.error(error);
-    return { success: false, error };
+    return { success: false, error: stringifyError(error) };
   }
 });

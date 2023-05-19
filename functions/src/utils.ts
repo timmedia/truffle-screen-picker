@@ -59,3 +59,14 @@ export async function verifyUserRole(accessToken: string, role: string) {
   );
   return data.orgUser.roleConnection.nodes.some(({ name }) => name === role);
 }
+
+export function stringifyError(error: any) {
+  if (error instanceof z.ZodError) {
+    error = error.issues
+      .map((issue) => `[${issue.path.join(", ")}] ${issue.message}`)
+      .join("\n");
+  } else if (error?.message) {
+    error = error.message;
+  }
+  return typeof error === "string" ? error : JSON.stringify(error);
+}

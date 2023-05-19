@@ -2,7 +2,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { verifyAccessToken, verifyUserRole } from "./utils";
+import { stringifyError, verifyAccessToken, verifyUserRole } from "./utils";
 import { firestore } from "./admin";
 import { PollLayout } from "./schemas";
 
@@ -41,6 +41,6 @@ export default functions.https.onCall(async (data) => {
     return { success: true, pollId };
   } catch (error) {
     functions.logger.error(error);
-    return { success: false, error };
+    return { success: false, error: stringifyError(error) };
   }
 });
