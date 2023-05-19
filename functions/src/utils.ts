@@ -10,8 +10,8 @@ const MYCELIUM_API_URL = defineString("VITE_MYCELIUM_API_URL");
 const AccessTokenPayloadSchema = z.object({
   userId: z.string().uuid(),
   packageId: z.string().uuid(),
-  packageInstallId: z.string().uuid(),
-  orgUserId: z.string().uuid(),
+  // packageInstallId: z.string().uuid(),
+  // orgUserId: z.string().uuid(),
   orgId: z.string().uuid(),
 });
 
