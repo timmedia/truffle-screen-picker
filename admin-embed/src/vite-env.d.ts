@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_VERSION: string;
   readonly VITE_TRUFFLE_VERSION: string;
   readonly VITE_FIREBASE_RESULTS_URL: string;
+  readonly VITE_MYCELIUM_API_URL: string;
 }
 
 interface ImportMeta {
