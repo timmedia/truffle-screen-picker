@@ -14,6 +14,9 @@ export default defineConfig({
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(
       process.env.npm_package_version
     ),
+    "import.meta.env.VITE_TRUFFLE_VERSION": JSON.stringify(
+      packageJson.dependencies["@trufflehq/sdk"]
+    ),
   },
   build: {
     outDir: "../hosting/embed/admin",

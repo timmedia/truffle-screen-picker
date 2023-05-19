@@ -357,6 +357,9 @@ function App() {
                 <Tooltip title="App Version">
                   <Chip label={import.meta.env.VITE_APP_VERSION} />
                 </Tooltip>
+                <Tooltip title="Truffle SDK Version">
+                  <Chip label={import.meta.env.VITE_TRUFFLE_VERSION} />
+                </Tooltip>
                 <Tooltip title="Mode">
                   <Chip label={import.meta.env.MODE} />
                 </Tooltip>
