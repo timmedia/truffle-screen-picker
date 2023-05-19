@@ -5,7 +5,7 @@ import { defineString } from "firebase-functions/params";
 
 // from .env
 const MYCELIUM_PUBLIC_ES256_KEY = defineString("MYCELIUM_PUBLIC_ES256_KEY");
-const MYCELIUM_API_URL = defineString("MYCELIUM_API_URL");
+const MYCELIUM_API_URL = defineString("VITE_MYCELIUM_API_URL");
 
 const AccessTokenPayloadSchema = z.object({
   userId: z.string().uuid(),
