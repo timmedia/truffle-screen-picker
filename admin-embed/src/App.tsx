@@ -37,9 +37,12 @@ function App() {
   const [tabIndex, setTabIndex] = useState(0);
 
   const params = new URLSearchParams(window.location.search);
-  const style: Style =
-    params.get("style")?.toLowerCase() === "twitch" ||
-    document.referrer?.includes("twitch")
+  const style =
+    params.get("style")?.toLowerCase() === "twitch"
+      ? twitchStyle
+      : params.get("style")?.toLowerCase() === "youtube"
+      ? youtubeStyle
+      : document.referrer?.includes("twitch")
       ? twitchStyle
       : youtubeStyle;
 
