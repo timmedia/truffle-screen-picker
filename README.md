@@ -59,23 +59,25 @@ Ideally, this would not be an embed, but perhaps accessible via the creator webs
 
 ```bash
 https://SITE_ID.firebaseapp.com/admin/
-https://screen-picker-embed.firebaseapp.com/admin/ # Production
+https://screen-picker-embed.firebaseapp.com/admin/
 ```
+
+The visual style of the embed tries to match the (dark mode) theme of the site it is embedded in (i.e. Twitch or YouTube). It can be set explicitly by passing a query parameter, e.g. `?style=twitch` or `style=youtube`. If no valid parameter is passed, it attempts to detect the site with `document.referrer` and defaults to the YouTube-style if nothing else is found.
 
 ## [Poll results](results-visualizer)
 
 Result are shown on a separate page, which connects to the Realtime Database. You can either access the visualization via a permalink to a specific poll
 
-```bash
+```
 https://SITE_ID.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID&pollId=YOUR_POLL_ID
-https://screen-picker-results.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID&pollId=YOUR_POLL_ID # Production
+https://screen-picker-results.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID&pollId=YOUR_POLL_ID
 ```
 
 or open
 
-```bash
+```
 https://SITE_ID.firebaseapp.com/latest?orgId=YOUR_ORG_ID
-https://screen-picker-results.firebaseapp.com/latest?orgId=YOUR_ORG_ID # Production
+https://screen-picker-results.firebaseapp.com/latest?orgId=YOUR_ORG_ID
 ```
 
 which redirects to the most recent poll of the specified org.
