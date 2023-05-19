@@ -129,14 +129,15 @@ export function Clustering({ points }: { points: Point[] }) {
           <text
             key={index}
             textAnchor="middle"
-            alignmentBaseline="central"
+            alignmentBaseline="baseline"
             x={window.innerWidth * center[0]}
             y={window.innerHeight * center[1]}
             style={{
               fill: `hsla(${h}, ${s}%, 5%, 1)`,
               fontFamily: "Thunder",
               fontSize: `clamp(50px, 8vw, 400px)`,
-              transform: "translateY(clamp(10px, 1vh, 100px))",
+              transform: "translateY(5vh)",
+              transition: "x 200ms ease",
             }}
           >
             {percentage}%

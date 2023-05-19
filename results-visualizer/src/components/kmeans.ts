@@ -38,7 +38,7 @@ function kmeans(
   points: Point[],
   k: number,
   aspectRatio: number,
-  maxIterations: number = 500
+  maxIterations: number = 100
 ): [Point, Point[], number, number][] {
   let centers: Point[] = Array(k)
     .fill(0)
@@ -65,9 +65,7 @@ function kmeans(
       clusteredPoints[optimalIndex].push(point);
       clusteredErrors[optimalIndex] = errors[optimalIndex];
     }
-    let totalError = clusteredErrors
-      .map((error, index) => error / clusteredPoints[index].length)
-      .reduce((total, error) => total + error, 0);
+    let totalError = clusteredErrors.reduce((total, error) => total + error, 0);
 
     centers = clusteredPoints
       .map((ps, index) =>
