@@ -31,6 +31,15 @@ Remember to specify the environment when deploying (`development`, `staging`, `p
 }
 ```
 
+Also hosted on
+
+```bash
+https://SITE_ID.firebaseapp.com/viewer/
+https://screen-picker-embed.firebaseapp.com/viewer/ # Production
+```
+
+where `SITE_ID` is determined by the mode (e.g. `screen-picker-embed` for `production`, c.f. [`.firebaserc`](.firebaserc))
+
 ## [Admin embed](admin-embed)
 
 Ideally, this would not be an embed, but perhaps accessible via the creator website?
@@ -48,17 +57,28 @@ Ideally, this would not be an embed, but perhaps accessible via the creator webs
 }
 ```
 
+```bash
+https://SITE_ID.firebaseapp.com/admin/
+https://screen-picker-embed.firebaseapp.com/admin/ # Production
+```
+
 ## [Poll results](results-visualizer)
 
 Result are shown on a separate page, which connects to the Realtime Database. You can either access the visualization via a permalink to a specific poll
 
-    https://SITE_ID.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID&pollId=YOUR_POLL_ID
+```bash
+https://SITE_ID.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID&pollId=YOUR_POLL_ID
+https://screen-picker-results.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID&pollId=YOUR_POLL_ID # Production
+```
 
 or open
 
-    https://SITE_ID.firebaseapp.com/latest?orgId=YOUR_ORG_ID
+```bash
+https://SITE_ID.firebaseapp.com/latest?orgId=YOUR_ORG_ID
+https://screen-picker-results.firebaseapp.com/latest?orgId=YOUR_ORG_ID # Production
+```
 
-which redirects to the most recent poll of the specified org. The `SITE_ID` depends on the environment of interest (e.g. `screen-picker-results` for `production`, c.f. [`.firebaserc`](.firebaserc)).
+which redirects to the most recent poll of the specified org.
 
 # Backend
 
