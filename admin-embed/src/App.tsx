@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import { z } from "zod";
-import { TruffleOrg, TruffleUser } from "@trufflehq/sdk";
+import { TruffleOrg, TruffleOrgUser, TruffleUser } from "@trufflehq/sdk";
 import { StoredSetupSchema } from "./schemas";
 import "./App.css";
 import { DrawingBoard } from "./components/DrawingBoard/DrawingBoard";
@@ -78,6 +78,7 @@ function App() {
 
   const [org, setOrg] = useState<TruffleOrg | undefined>(undefined);
   const [user, setUser] = useState<TruffleUser | undefined>(undefined);
+  const [orgUser, setOrgUser] = useState<TruffleOrgUser | undefined>(undefined);
   const [tabIndex, setTabIndex] = useState(0);
 
   useEffect(() => {
@@ -108,6 +109,15 @@ function App() {
   useEffect(() => {
     const subscription = truffle.user.observable.subscribe({
       next: (user) => setUser(user),
+      error: (error) => console.log(error),
+      complete: () => void null,
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const subscription = truffle.orgUser.observable.subscribe({
+      next: (orgUser) => setOrgUser(orgUser),
       error: (error) => console.log(error),
       complete: () => void null,
     });
@@ -323,6 +333,13 @@ function App() {
                   <ListItemText
                     primary={`User: ${user?.name ?? "-"}`}
                     secondary={user?.id ?? "-"}
+                    secondaryTypographyProps={{ color: "#888" }}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary={`Org User: ${orgUser?.name ?? "-"}`}
+                    secondary={orgUser?.id ?? "-"}
                     secondaryTypographyProps={{ color: "#888" }}
                   />
                 </ListItem>
