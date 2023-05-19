@@ -1,5 +1,5 @@
 import { SyntheticEvent, useEffect, useState } from "react";
-import { hostingBaseURL, onDocSnapshot } from "./firebase";
+import { onDocSnapshot } from "./firebase";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
@@ -12,7 +12,6 @@ import {
   Stack,
   ThemeProvider,
   Tooltip,
-  createTheme,
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import { z } from "zod";
@@ -24,52 +23,8 @@ import CreatePollButton from "./components/CreatePollButton";
 import { StopPollButton } from "./components/StopPollButton";
 import { Toaster } from "react-hot-toast";
 import { embed, truffle } from "./truffle";
-
-const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-    background: {
-      default: "#272727",
-    },
-    primary: {
-      main: "rgb(146, 227, 227)",
-    },
-    secondary: {
-      main: "rgb(255, 147, 192)",
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 50,
-          boxShadow: ["none"],
-          ":hover": {
-            boxShadow: ["none"],
-          },
-          textTransform: "none",
-        },
-        startIcon: {
-          paddingLeft: "5px",
-        },
-      },
-    },
-    MuiButtonGroup: {
-      styleOverrides: {
-        root: {
-          boxShadow: ["none"],
-        },
-      },
-    },
-    MuiListItem: {
-      styleOverrides: {
-        root: {
-          padding: "8px 0px",
-        },
-      },
-    },
-  },
-});
+import { youtubeStyle, twitchStyle, Style } from "./themes";
+import { cssPropertiesToKebabCase } from "./utils";
 
 function App() {
   const [storedSetup, setStoredSetup] = useState<
@@ -81,13 +36,19 @@ function App() {
   const [orgUser, setOrgUser] = useState<TruffleOrgUser | undefined>(undefined);
   const [tabIndex, setTabIndex] = useState(0);
 
+  const params = new URLSearchParams(window.location.search);
+  const style: Style =
+    params.get("style")?.toLowerCase() === "twitch" ||
+    document.referrer?.includes("twitch")
+      ? twitchStyle
+      : youtubeStyle;
+
   useEffect(() => {
     embed.setStyles({
       height: `${document.body.scrollHeight}px`,
-      margin: "24px 0px",
-      "border-radius": "12px",
+      ...cssPropertiesToKebabCase(style.embedStyle),
     });
-  }, [document.body.scrollHeight, tabIndex]);
+  }, [document.body.scrollHeight, tabIndex, style]);
 
   useEffect(() => {
     if (org === undefined) return;
@@ -130,78 +91,44 @@ function App() {
 
   return (
     <>
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={style.theme}>
         <CssBaseline />
-        <Box sx={{ width: "100%", color: "whitesmoke", p: 0, m: 0 }}>
-          {/* <Stack
-            spacing={1}
-            direction="row"
-            sx={{ py: 2, px: 0, bgcolor: "transparent" }}
+        <Box
+          sx={{
+            width: "100%",
+            color: "whitesmoke",
+            p: 0,
+            m: 0,
+            maxWidth: "1200px",
+          }}
+        >
+          <Box
+            sx={{
+              borderBottom: 0,
+              borderColor: "divider",
+            }}
           >
-            <Button
-              variant="contained"
-              size="small"
-              onClick={() => setTabIndex(0)}
-              sx={{
-                borderRadius: 2,
-                bgcolor: "#333",
-                color: "white",
-                textTransform: "none",
-                fontSize: "14px",
-                ":disabled": { bgcolor: "white", color: "#151515" },
-                ":hover": { bgcolor: "#444" },
-              }}
-              disabled={tabIndex === 0}
-            >
-              Control Poll
-            </Button>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={() => setTabIndex(1)}
-              sx={{
-                borderRadius: 2,
-                bgcolor: "#333",
-                color: "white",
-                textTransform: "none",
-                fontSize: "14px",
-                ":disabled": { bgcolor: "white", color: "#151515" },
-                ":hover": { bgcolor: "#444" },
-              }}
-              disabled={tabIndex === 1}
-            >
-              Manage Layouts
-            </Button>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={() => setTabIndex(2)}
-              sx={{
-                borderRadius: 2,
-                bgcolor: "#333",
-                color: "white",
-                textTransform: "none",
-                fontSize: "14px",
-                ":disabled": { bgcolor: "white", color: "#151515" },
-                ":hover": { bgcolor: "#444" },
-              }}
-              disabled={tabIndex === 2}
-            >
-              Information
-            </Button>
-          </Stack> */}
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs
               value={tabIndex}
               onChange={handleChange}
               aria-label="main menu"
+              TabIndicatorProps={{
+                style: { background: style.theme.palette.primary.light },
+              }}
             >
               <Tab label="Control Poll" {...a11yProps(0)} />
               <Tab label="Poll Layouts" {...a11yProps(1)} />
               <Tab label="Information" {...a11yProps(2)} />
             </Tabs>
           </Box>
-          <Box>
+          <Box
+            sx={{
+              backgroundColor: style.theme.palette.background.paper,
+              p: 0,
+              m: 0,
+              borderRadius: "4px",
+            }}
+          >
             <TabPanel value={tabIndex} index={0}>
               <List sx={{ pt: 0, mt: 0 }}>
                 <ListItem>
@@ -222,8 +149,9 @@ function App() {
                   <Box
                     sx={{
                       bgcolor: "lightgrey",
-                      width: "100vw",
-                      height: "calc(100vw / 16 * 9)",
+                      width: "100%",
+                      aspectRatio: "16 / 9",
+                      maxHeight: "calc(1200px / 16 * 9)",
                       backgroundImage: `linear-gradient(45deg, #ccc 25%, transparent 25%), 
                                         linear-gradient(135deg, #ccc 25%, transparent 25%),
                                         linear-gradient(45deg, transparent 75%, #ccc 75%),

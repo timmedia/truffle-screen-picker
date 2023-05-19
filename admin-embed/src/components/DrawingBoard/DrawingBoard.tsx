@@ -16,6 +16,7 @@ import {
   Stack,
   Toolbar,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { Close, Dashboard, Delete, Edit, NoteAdd } from "@mui/icons-material";
 import { TruffleOrg, getAccessToken } from "@trufflehq/sdk";
@@ -38,6 +39,7 @@ export function DrawingBoard() {
   >(undefined);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     const subscription = truffle.org.observable.subscribe({
@@ -161,12 +163,19 @@ export function DrawingBoard() {
       <Dialog fullScreen open={open} onClose={handleClose}>
         <AppBar sx={{ position: "relative" }}>
           <Toolbar disableGutters sx={{ px: "10px" }}>
-            <Stack direction="row" spacing={0.6} alignItems="center">
+            <Stack
+              direction="row"
+              spacing={0.6}
+              alignItems="center"
+              justifyContent="space-between"
+              width="100%"
+            >
               <SaveButton onComplete={handleClose} />
               <ResetButton />
               <AddButton />
               <EditButton />
               <NameInput />
+              <div style={{ flexGrow: 1 }}></div>
               <Button
                 size="small"
                 variant="contained"
