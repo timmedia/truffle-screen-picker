@@ -22,11 +22,7 @@ Remember to specify the environment when deploying (`development`, `staging`, `p
   "contentPageType": "youtube",
   "defaultStyles": {
     "height": "100%",
-    "width": "100%",
-    "position": "absolute",
-    "top": "0px",
-    "left": "0px",
-    "mix-blend-mode": "hard-light"
+    "width": "100%"
   }
 }
 ```
