@@ -38,6 +38,7 @@ function App() {
       top: "0px",
       left: "0px",
       // "mix-blend-mode": "normal",
+      "mix-blend-mode": "hard-light",
       "z-index": 50000,
       boxShadow: "0px 0px 200px rgb(255, 147, 192)",
       transition: "opacity 300ms linear",
