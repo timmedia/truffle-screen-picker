@@ -48,7 +48,7 @@ function App() {
 
   useEffect(() => {
     embed.setStyles({
-      height: `${document.body.scrollHeight}px`,
+      height: `${document.body.scrollHeight + 25}px`,
       ...cssPropertiesToKebabCase(style.embedStyle),
     });
   }, [document.body.scrollHeight, tabIndex, style]);
