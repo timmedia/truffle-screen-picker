@@ -12,6 +12,12 @@ export function Opener(props: {
     if (animationStage === 3) props.onAnimationComplete?.();
   }, [animationStage, props.onAnimationComplete]);
 
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  const topFontSize = (3 / props.topText.length) * h;
+  const bottomFontSize = (3 / props.bottomText.length) * h;
+
   return (
     <div
       style={{
@@ -42,7 +48,7 @@ export function Opener(props: {
         onAnimationEnd={() => setAnimationStage(1)}
       ></div>
       <svg
-        viewBox="0 0 140 80"
+        viewBox={`0 0 ${w} ${h}`}
         xmlns="http://www.w3.org/2000/svg"
         style={{
           position: "absolute",
@@ -55,14 +61,17 @@ export function Opener(props: {
       >
         <text
           textAnchor="middle"
-          alignmentBaseline="alphabetic"
-          x="70"
-          y="32"
+          x="50%"
+          y={`${
+            (h - 0.7 * (topFontSize + bottomFontSize)) / 2 +
+            0.7 * topFontSize -
+            0.02 * h
+          }px`}
           style={{
-            fontSize: `${(7 / props.topText.length) * 35}px`,
+            fontSize: `${topFontSize}px`,
             fill: animationStage >= 1 ? "rgb(255, 147, 192)" : "grey",
             transformOrigin: "50% 100%",
-            transform: "scale(2.2)",
+            transform: `scale(2.2)`,
             animationName: "textZoom",
             animationDuration: "300ms",
             animationDelay: "250ms",
@@ -78,11 +87,12 @@ export function Opener(props: {
         </text>
         <text
           textAnchor="middle"
-          alignmentBaseline="hanging"
-          x="70"
-          y="44"
+          x="50%"
+          y={`${
+            h - (h - 0.7 * (topFontSize + bottomFontSize)) / 2 + 0.02 * h
+          }px`}
           style={{
-            fontSize: `${(7 / props.bottomText.length) * 35}px`,
+            fontSize: `${bottomFontSize}px`,
             fill: animationStage >= 1 ? "rgb(255, 147, 192)" : "grey",
             transformOrigin: "50% 0%",
             transform: "scale(2.2)",

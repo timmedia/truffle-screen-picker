@@ -106,13 +106,12 @@ export function AreaBinning({
             />
             <text
               textAnchor="middle"
-              alignmentBaseline="central"
               x={(x + width / 2) * w}
               y={(y + height / 2) * h}
               style={{
                 fontFamily: "Thunder",
                 fontSize: `clamp(50px, ${(width * w) / 4}px, 200px)`,
-                transform: "translateY(clamp(10px, 2vh, 100px))",
+                transform: "translateY(clamp(10px, 4vh, 100px))",
                 fill: "black",
                 userSelect: "none",
               }}
