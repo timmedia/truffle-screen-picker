@@ -25,6 +25,7 @@ import { Toaster } from "react-hot-toast";
 import { embed, truffle } from "./truffle";
 import { youtubeStyle, twitchStyle, Style } from "./themes";
 import { cssPropertiesToKebabCase } from "./utils";
+import { PastPolls } from "./components/DrawingBoard/PastPolls";
 
 function App() {
   const [storedSetup, setStoredSetup] = useState<
@@ -120,8 +121,9 @@ function App() {
               }}
             >
               <Tab label="Control Poll" {...a11yProps(0)} />
-              <Tab label="Poll Layouts" {...a11yProps(1)} />
-              <Tab label="Information" {...a11yProps(2)} />
+              <Tab label="Past Polls" {...a11yProps(1)} />
+              <Tab label="Poll Layouts" {...a11yProps(2)} />
+              <Tab label="Information" {...a11yProps(3)} />
             </Tabs>
           </Box>
           <Box
@@ -249,9 +251,12 @@ function App() {
               </List>
             </TabPanel>
             <TabPanel value={tabIndex} index={1}>
-              <DrawingBoard />
+              <PastPolls />
             </TabPanel>
             <TabPanel value={tabIndex} index={2}>
+              <DrawingBoard />
+            </TabPanel>
+            <TabPanel value={tabIndex} index={3}>
               <List sx={{ m: 0, p: 0 }} dense>
                 <ListItem>
                   <ListItemText
