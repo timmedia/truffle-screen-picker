@@ -12,6 +12,7 @@ import type {
   StopPollData,
   SavePollLayoutData,
   DeletePollLayoutData,
+  DeletePollsData,
 } from "./schemas";
 
 const app = initializeApp({
@@ -42,6 +43,15 @@ export async function stopCurrentPoll(accessToken: string) {
     "screenPoll-stopCurrentPoll"
   );
   const result = await func({ accessToken });
+  return result.data;
+}
+
+export async function deletePastPolls(data: DeletePollsData) {
+  const func = httpsCallable<
+    DeletePollsData,
+    { success: boolean; error?: any }
+  >(functions, "screenPoll-deletePolls");
+  const result = await func(data);
   return result.data;
 }
 

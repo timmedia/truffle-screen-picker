@@ -1,46 +1,126 @@
-import { useEffect, useState } from "react";
-import { onCollSnapshot } from "../../firebase";
-import { TruffleOrg } from "@trufflehq/sdk";
-import { truffle } from "../../truffle";
+import { useCallback, useEffect, useState } from "react";
+import { TruffleOrg, getAccessToken } from "@trufflehq/sdk";
 import {
+  Alert,
   Box,
   Button,
-  CircularProgress,
-  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   LinearProgress,
-  List,
-  ListItem,
-  ListItemText,
-  Stack,
   Typography,
 } from "@mui/material";
 import { Delete, OpenInNew } from "@mui/icons-material";
-import { StoredPoll } from "../../schemas";
 import {
   DataGrid,
   GridColDef,
-  GridToolbarColumnsButton,
   GridToolbarContainer,
-  GridToolbarDensitySelector,
   GridToolbarExport,
-  GridToolbarFilterButton,
-  GridValueFormatterParams,
-  GridValueGetterParams,
   GridRowSelectionModel,
-  GridRowParams,
 } from "@mui/x-data-grid";
+import toast from "react-hot-toast";
+import { truffle } from "../../truffle";
+import { deletePastPolls, onCollSnapshot } from "../../firebase";
+import type { StoredPoll } from "../../schemas";
 
-function PollsToolbar(props: { selectionModel: GridRowSelectionModel }) {
+function PollsToolbar(props: {
+  selectionModel: GridRowSelectionModel;
+  loadingSetter: (value: boolean) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   return (
-    <GridToolbarContainer>
-      <GridToolbarExport />
-      <Button
-        disabled={props.selectionModel.length === 0}
-        startIcon={<Delete />}
+    <>
+      <GridToolbarContainer>
+        <GridToolbarExport />
+        <Button
+          disabled={props.selectionModel.length === 0}
+          startIcon={<Delete />}
+          onClick={handleClickOpen}
+        >
+          Delete Selection
+        </Button>
+      </GridToolbarContainer>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        hideBackdrop
       >
-        Delete Selection
-      </Button>
-    </GridToolbarContainer>
+        <DialogTitle id="alert-dialog-title">
+          Delete selected poll{props.selectionModel.length > 1 ? "s" : ""}?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            This will permanently remove the {props.selectionModel.length}{" "}
+            selected poll{props.selectionModel.length > 1 ? "s" : ""} from your
+            org. The votes cast in{" "}
+            {props.selectionModel.length > 1 ? "these" : "this"} poll
+            {props.selectionModel.length > 1 ? "s" : ""} will also be deleted.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button
+            onClick={async () => {
+              handleClose();
+              props.loadingSetter(true);
+              let toastId;
+              try {
+                toastId = toast.custom(
+                  <Alert severity="info">
+                    Deleting {props.selectionModel.length} Poll
+                    {props.selectionModel.length > 1 ? "s" : ""}...
+                  </Alert>,
+                  { duration: Infinity }
+                );
+                const result = await deletePastPolls({
+                  accessToken: await getAccessToken(),
+                  ids: props.selectionModel.map((id) => `${id.valueOf()}`),
+                });
+                if (!result.success)
+                  throw new Error(JSON.stringify(result?.error));
+                toast.custom(
+                  <Alert severity="success">
+                    Poll{props.selectionModel.length > 1 ? "s" : ""} deleted
+                    successfully.
+                  </Alert>,
+                  { duration: 2500 }
+                );
+              } catch (error) {
+                console.log(error);
+                toast.custom(
+                  <Alert severity="error">
+                    Error:{" "}
+                    {(error as Error)?.message || `${JSON.stringify(error)}`}
+                  </Alert>,
+                  {
+                    duration: 5000,
+                  }
+                );
+              } finally {
+                if (toastId) toast.dismiss(toastId);
+                props.loadingSetter(false);
+              }
+            }}
+            autoFocus
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 
@@ -59,6 +139,7 @@ function NoRowsOverlay() {
 export function PastPolls(props: {}) {
   const [org, setOrg] = useState<TruffleOrg | undefined>(undefined);
   const [polls, setPolls] = useState<StoredPoll[] | undefined>(undefined);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>(
     []
   );
@@ -87,11 +168,15 @@ export function PastPolls(props: {}) {
               startedAtB?.getTime() - startedAtA?.getTime()
           ) as StoredPoll[]
       );
+      setLoading(false);
     });
     return () => unsubscribe();
   }, [org]);
 
-  const deletePoll = (id: string) => {};
+  const loadingSetter = useCallback(
+    (value: boolean) => setLoading(value),
+    [setLoading]
+  );
 
   const columns: GridColDef[] = [
     {
@@ -119,16 +204,18 @@ export function PastPolls(props: {}) {
     {
       field: "layout",
       headerName: "Layout",
+      width: 150,
       valueFormatter: (params) =>
         params.value === null
           ? "Clustering"
-          : `${params.value?.areas?.length} Areas`,
+          : params.value?.name ?? `${params.value?.areas?.length} Areas`,
     },
     {
       field: "action",
       width: 150,
       headerName: "",
       sortable: false,
+      disableColumnMenu: true,
       disableExport: true,
       renderCell: (params) => {
         if (org?.id === undefined) return <></>;
@@ -140,6 +227,7 @@ export function PastPolls(props: {}) {
             href={`${
               import.meta.env.VITE_FIREBASE_RESULTS_URL
             }/visualizer?orgId=${org.id}&pollId=${params.id}`}
+            onClick={(e) => e.stopPropagation()}
           >
             View Results
           </Button>
@@ -157,9 +245,8 @@ export function PastPolls(props: {}) {
         padding: "0px !important",
       }}
     >
-      {/* {polls === undefined && <CircularProgress style={{ marginTop: 50 }} />} */}
       <DataGrid
-        loading={polls === undefined}
+        loading={loading}
         rows={polls ?? []}
         columns={columns}
         initialState={{
@@ -175,9 +262,12 @@ export function PastPolls(props: {}) {
         slotProps={{
           toolbar: {
             selectionModel,
+            loadingSetter,
           },
         }}
-        isRowSelectable={(params) => params.row.stoppedAt !== "Ongoing"}
+        isRowSelectable={(params) =>
+          !loading && params.row.stoppedAt !== "Ongoing"
+        }
         disableRowSelectionOnClick
         pageSizeOptions={[10, 50, 100]}
         checkboxSelection
@@ -186,53 +276,6 @@ export function PastPolls(props: {}) {
         }
         style={{ height: "665px" }}
       />
-      {/* <List>
-        {org &&
-          polls?.map((poll, index) => (
-            <ListItem
-              key={poll.id}
-              secondaryAction={
-                <>
-                  <Stack spacing={2} direction="row">
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      // disabled={deleteLoading}
-                      href={`${
-                        import.meta.env.VITE_FIREBASE_RESULTS_URL
-                      }/visualizer?orgId=${org.id}&pollId=${poll.id}`}
-                      target="_blank"
-                      // onClick={() => deletePoll(poll.id)}
-                    >
-                      <OpenInNew />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      // disabled={deleteLoading}
-                      onClick={() => deletePoll(poll.id)}
-                    >
-                      <Delete />
-                    </IconButton>
-                  </Stack>
-                </>
-              }
-            >
-              <ListItemText
-                primary={`${poll.startedAt?.toLocaleString()} - ${poll.stoppedAt?.toLocaleString()}`}
-                secondary={
-                  <p style={{ margin: "5px 0" }}>
-                    {poll.id}
-                    <br />
-                    {poll.layout === null
-                      ? "Clustering"
-                      : `${poll.layout.areas.length} Areas`}
-                  </p>
-                }
-              />
-            </ListItem>
-          ))}
-      </List> */}
     </Box>
   );
 }

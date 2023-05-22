@@ -55,6 +55,13 @@ const SavePollLayoutData = z.object({
     .min(1),
 });
 
+const DeletePollsData = z.object({
+  accessToken: z.string(),
+  ids: z.array(z.string().uuid()),
+});
+
+export type DeletePollsData = z.infer<typeof DeletePollsData>;
+
 export const DeletePollLayoutData = z.object({
   accessToken: z.string(),
   layoutId: z.string().uuid(),
