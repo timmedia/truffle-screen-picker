@@ -25,7 +25,7 @@ import { Toaster } from "react-hot-toast";
 import { embed, truffle } from "./truffle";
 import { youtubeStyle, twitchStyle, Style } from "./themes";
 import { cssPropertiesToKebabCase } from "./utils";
-import { PastPolls } from "./components/DrawingBoard/PastPolls";
+import { PastPolls } from "./components/PastPolls";
 
 function App() {
   const [storedSetup, setStoredSetup] = useState<

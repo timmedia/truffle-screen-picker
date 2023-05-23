@@ -31,6 +31,7 @@ export const StoredPoll = z.object({
   layout: z.null().or(PollLayout),
   startedAt: z.date(),
   stoppedAt: z.date(),
+  numVotes: z.number(),
 });
 
 export type StoredPoll = z.infer<typeof StoredPoll>;

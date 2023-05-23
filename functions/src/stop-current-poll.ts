@@ -2,7 +2,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { z } from "zod";
 import { stringifyError, verifyAccessToken, verifyUserRole } from "./utils";
-import { firestore } from "./admin";
+import { db, firestore } from "./admin";
 import type { StoredSetupSchema } from "./schemas";
 
 const StopPollData = z.object({
@@ -18,6 +18,8 @@ export default functions.https.onCall(async (data) => {
     const snapshot = await firestore.collection("orgs").doc(orgId).get();
     const { pollId } = snapshot.data() as StoredSetupSchema;
     if (pollId === null) throw new Error("Specified org has no active poll.");
+    const votes = await db.ref(`polls/${pollId}`).get();
+    const numVotes = votes.numChildren();
     await Promise.all([
       firestore.collection("orgs").doc(orgId).update({
         pollId: null,
@@ -28,7 +30,10 @@ export default functions.https.onCall(async (data) => {
         .doc(orgId)
         .collection("polls")
         .doc(pollId)
-        .update({ stoppedAt: admin.firestore.FieldValue.serverTimestamp() }),
+        .update({
+          stoppedAt: admin.firestore.FieldValue.serverTimestamp(),
+          numVotes,
+        }),
     ]);
     functions.logger.info(`Stopped Poll ${pollId}`);
     return { success: true };

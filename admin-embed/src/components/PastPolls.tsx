@@ -21,9 +21,9 @@ import {
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
 import toast from "react-hot-toast";
-import { truffle } from "../../truffle";
-import { deletePastPolls, onCollSnapshot } from "../../firebase";
-import type { StoredPoll } from "../../schemas";
+import { truffle } from "../truffle";
+import { deletePastPolls, onCollSnapshot } from "../firebase";
+import type { StoredPoll } from "../schemas";
 
 function PollsToolbar(props: {
   selectionModel: GridRowSelectionModel;
@@ -182,37 +182,53 @@ export function PastPolls(props: {}) {
     {
       field: "startedAt",
       headerName: "Opened",
-      width: 170,
+      width: 160,
+      minWidth: 150,
+      flex: 4,
       type: "string",
       valueFormatter: (params) => `${params.value?.toLocaleString()}`,
     },
     {
       field: "stoppedAt",
       headerName: "Closed",
-      width: 170,
+      width: 160,
+      minWidth: 150,
+      flex: 4,
+      type: "string",
       valueFormatter: (params) => `${params.value?.toLocaleString()}`,
     },
     {
-      field: "id",
-      headerName: "Poll ID",
-      width: 300,
-      type: "string",
-      flex: 1,
-      align: "left",
-      headerAlign: "left",
+      field: "numVotes",
+      headerName: "Votes",
+      type: "number",
+      align: "right",
+      headerAlign: "right",
+      width: 50,
+      flex: 0,
     },
     {
       field: "layout",
       headerName: "Layout",
       width: 150,
+      flex: 2,
+      minWidth: 50,
       valueFormatter: (params) =>
         params.value === null
           ? "Clustering"
           : params.value?.name ?? `${params.value?.areas?.length} Areas`,
     },
     {
+      field: "id",
+      headerName: "Poll ID",
+      width: 300,
+      type: "string",
+      flex: 5,
+      align: "left",
+      headerAlign: "left",
+    },
+    {
       field: "action",
-      width: 150,
+      width: 110,
       headerName: "",
       sortable: false,
       disableColumnMenu: true,
@@ -222,14 +238,14 @@ export function PastPolls(props: {}) {
         return (
           <Button
             variant="contained"
-            endIcon={<OpenInNew />}
+            startIcon={<OpenInNew />}
             target="_blank"
             href={`${
               import.meta.env.VITE_FIREBASE_RESULTS_URL
             }/visualizer?orgId=${org.id}&pollId=${params.id}`}
             onClick={(e) => e.stopPropagation()}
           >
-            View Results
+            Results
           </Button>
         );
       },
