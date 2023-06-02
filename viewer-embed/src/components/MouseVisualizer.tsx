@@ -41,7 +41,7 @@ export function MouseVisualizer(props: {
     return () => {
       fadeOut = () => {};
     };
-  }, [canvasRef]);
+  }, [canvasRef, window.innerHeight, window.innerWidth]);
 
   useEffect(() => {
     const updateWindowDimensions = () => {
