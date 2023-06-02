@@ -8,7 +8,6 @@ export type Style = {
 };
 
 const defaultEmbedStyles: CSSProperties = {
-  display: "block",
   transition: "height 150ms ease",
 };
 
