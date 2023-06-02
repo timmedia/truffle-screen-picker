@@ -90,7 +90,9 @@ function App() {
       next: (orgUser) => {
         setOrgUser(orgUser);
         setCanActivate(
-          orgUser.roleConnection.nodes.some((role) => role.name === "Admin")
+          !!orgUser?.roleConnection?.nodes?.some(
+            (role) => role.name === "Admin"
+          )
         );
       },
       error: (error) => console.log(error),
