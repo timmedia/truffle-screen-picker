@@ -1,6 +1,6 @@
 import { getEmbed, initTruffleApp } from "@trufflehq/sdk";
 
-export const truffle = initTruffleApp({
-  url: import.meta.env.VITE_MYCELIUM_API_URL,
-});
+const apiUrl = import.meta.env.VITE_MYCELIUM_API_URL;
+
+export const truffle = initTruffleApp({ url: apiUrl });
 export const embed = getEmbed();

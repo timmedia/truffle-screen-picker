@@ -32,6 +32,7 @@ function App() {
     z.infer<typeof StoredSetupSchema> | undefined
   >(undefined);
 
+  const [canActivate, setCanActivate] = useState<boolean>(false);
   const [org, setOrg] = useState<TruffleOrg | undefined>(undefined);
   const [user, setUser] = useState<TruffleUser | undefined>(undefined);
   const [orgUser, setOrgUser] = useState<TruffleOrgUser | undefined>(undefined);
@@ -53,6 +54,10 @@ function App() {
       ...cssPropertiesToKebabCase(style.embedStyle),
     });
   }, [document.body.scrollHeight, tabIndex, style]);
+
+  useEffect(() => {
+    embed.setStyles({ display: canActivate ? "block" : "none" });
+  }, [canActivate]);
 
   useEffect(() => {
     if (org === undefined) return;
@@ -82,7 +87,12 @@ function App() {
 
   useEffect(() => {
     const subscription = truffle.orgUser.observable.subscribe({
-      next: (orgUser) => setOrgUser(orgUser),
+      next: (orgUser) => {
+        setOrgUser(orgUser);
+        setCanActivate(
+          orgUser.roleConnection.nodes.some((role) => role.name === "Admin")
+        );
+      },
       error: (error) => console.log(error),
       complete: () => void null,
     });
