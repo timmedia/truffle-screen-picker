@@ -32,13 +32,13 @@ export function pollDataSubscription(
 }
 
 // listen to changes of all document in collection
-export const onCollSnapshot = (
+export const onCollSnapshot = <T>(
   collectionPath: string,
-  callback: (data: DocumentData[]) => void
+  callback: (data: (T & { id: string })[]) => void
 ) => {
   const ref = collection(firestore, collectionPath);
   return onSnapshot(ref, (data) => {
-    callback(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    callback(data.docs.map((doc) => ({ ...(doc.data() as T), id: doc.id })));
   });
 };
 
@@ -47,8 +47,11 @@ export function latestPollIdSubscription(
   orgId: string,
   callback: (pollId: string | null) => void
 ) {
-  // TODO: figure out what shape `polls` has and how to sort to find most recent poll
-  const unsubscribe = onCollSnapshot(`/orgs/${orgId}/polls`, (polls) => {});
+  return onCollSnapshot<SavedPoll>(`/orgs/${orgId}/polls`, (polls) => {
+    polls.sort((p1, p2) => p1.startedAt - p2.startedAt);
+    if (polls.length === 0) callback(null);
+    else callback(polls[polls.length - 1].id);
+  });
 }
 
 export async function getPollLayout(pollId: string, orgId: string) {
