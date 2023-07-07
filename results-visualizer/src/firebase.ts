@@ -1,5 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { doc, getDoc, getFirestore } from "firebase/firestore";
+import {
+  DocumentData,
+  collection,
+  doc,
+  getDoc,
+  getFirestore,
+  onSnapshot,
+} from "firebase/firestore";
 import { getDatabase, onValue, ref } from "firebase/database";
 import { SavedPoll } from "./schemas";
 
@@ -22,6 +29,29 @@ export function pollDataSubscription(
     callback(Object.values(data || []));
   });
   return { unsubscribe };
+}
+
+// listen to changes of all document in collection
+export const onCollSnapshot = <T>(
+  collectionPath: string,
+  callback: (data: (T & { id: string })[]) => void
+) => {
+  const ref = collection(firestore, collectionPath);
+  return onSnapshot(ref, (data) => {
+    callback(data.docs.map((doc) => ({ ...(doc.data() as T), id: doc.id })));
+  });
+};
+
+// `pollId` in callback should only be `null` if org has never ran a poll yet
+export function latestPollIdSubscription(
+  orgId: string,
+  callback: (pollId: string | null) => void
+) {
+  return onCollSnapshot<SavedPoll>(`/orgs/${orgId}/polls`, (polls) => {
+    polls.sort((p1, p2) => p1.startedAt - p2.startedAt);
+    if (polls.length === 0) callback(null);
+    else callback(polls[polls.length - 1].id);
+  });
 }
 
 export async function getPollLayout(pollId: string, orgId: string) {

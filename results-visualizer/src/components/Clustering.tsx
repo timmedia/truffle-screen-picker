@@ -10,6 +10,7 @@ function drawPoints(points: Point[], canvas: HTMLCanvasElement) {
   const aspectRatio = window.innerHeight / window.innerWidth;
   const context = canvas!.getContext("2d")!;
   context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+  if (points.length === 0) return [];
   const radius =
     context.canvas.width / Math.max(Math.min(points.length, 100), 50);
   const clusters = cluster(points, aspectRatio);
@@ -107,7 +108,6 @@ export function Clustering({ points }: { points: Point[] }) {
     if (canvasRef === null) return;
     const canvas = canvasRef.current;
     if (canvas === null) return;
-    if (points.length === 0) return;
     setLables(drawPoints(points, canvas));
   }, [points]);
 

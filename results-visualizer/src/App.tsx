@@ -1,26 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import { getPollLayout, pollDataSubscription } from "./firebase";
+import {
+  getPollLayout,
+  latestPollIdSubscription,
+  pollDataSubscription,
+} from "./firebase";
 import { PollLayout } from "./schemas";
 import { AreaBinning } from "./components/AreaBinning";
 import { Clustering } from "./components/Clustering";
 
 function App() {
   const [data, setData] = useState<[number, number][] | undefined>(undefined);
+  const [pollId, setPollId] = useState<undefined | string | null>(undefined);
   const [layout, setLayout] = useState<PollLayout | null | undefined>(
     undefined
   );
 
   const params = new URLSearchParams(window.location.search);
-  const pollId = params.get("pollId");
   const orgId = params.get("orgId");
-
-  if (typeof pollId !== "string")
-    return (
-      <h1>
-        Please supply a <code>pollId</code> query parameter.
-      </h1>
-    );
 
   if (typeof orgId !== "string")
     return (
@@ -29,7 +26,22 @@ function App() {
       </h1>
     );
 
+  const passedPollId = params.get("pollId");
+
   useEffect(() => {
+    let unsubscribe: Function = () => {};
+    if (typeof passedPollId === "string") {
+      setPollId(passedPollId);
+    } else {
+      unsubscribe = latestPollIdSubscription(orgId, (pollId) => {
+        setPollId(pollId);
+      });
+    }
+    return () => unsubscribe();
+  }, [orgId]);
+
+  useEffect(() => {
+    if (typeof pollId !== "string") return;
     const subscription = pollDataSubscription(pollId, (data) => {
       setData(data);
     });
@@ -37,6 +49,7 @@ function App() {
   }, [pollId]);
 
   useEffect(() => {
+    if (typeof pollId !== "string") return;
     getPollLayout(pollId, orgId).then((data) => setLayout(data));
   }, [pollId, orgId]);
 
@@ -65,7 +78,9 @@ function App() {
           transition: "opacity 150ms ease",
         }}
       >
-        <h1>Loading...</h1>
+        <h1>
+          {pollId === null ? "No polls found for specified org." : "Loading..."}
+        </h1>
       </div>
       <div
         style={{
