@@ -27,13 +27,18 @@ function App() {
     );
 
   const passedPollId = params.get("pollId");
-  if (typeof passedPollId === "string") {
-    setPollId(passedPollId);
-  } else {
-    latestPollIdSubscription(orgId, (pollId) => {
-      setPollId(pollId);
-    });
-  }
+
+  useEffect(() => {
+    let unsubscribe: Function = () => {};
+    if (typeof passedPollId === "string") {
+      setPollId(passedPollId);
+    } else {
+      unsubscribe = latestPollIdSubscription(orgId, (pollId) => {
+        setPollId(pollId);
+      });
+    }
+    return () => unsubscribe();
+  }, [orgId]);
 
   useEffect(() => {
     if (typeof pollId !== "string") return;
