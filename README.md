@@ -69,14 +69,14 @@ https://SITE_ID.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID&pollId=YOUR_POLL_ID
 https://screen-picker-results.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID&pollId=YOUR_POLL_ID
 ```
 
-or open
+or open leave the `pollId` parameter, which will show you the results of the most recent poll. (This automatically updated the view if a new poll is opened.)
 
 ```
-https://SITE_ID.firebaseapp.com/latest?orgId=YOUR_ORG_ID
-https://screen-picker-results.firebaseapp.com/latest?orgId=YOUR_ORG_ID
+https://SITE_ID.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID
+https://screen-picker-results.firebaseapp.com/visualizer?orgId=YOUR_ORG_ID
 ```
 
-which redirects to the most recent poll of the specified org.
+The latter is also the site recommended to be embedded into your OBS as an overlay.
 
 # Backend
 
