@@ -80,7 +80,7 @@ The latter is also the site recommended to be embedded into your OBS as an overl
 
 # Backend
 
-Business logic, databases and hosting are handled with Firebase. A Realtime Database stores the poll entries and Firestore saves what polls exists and which are currently active. Hosting is needed to serve the page showing the poll results, which can be added as a browser source in OBS.
+Business logic, databases and hosting are handled with Firebase. A Realtime Database stores the poll entries and Firestore saves what polls exists and which are currently active. Hosting is needed to serve the page showing the poll results.
 
 # Simulate entries
 
